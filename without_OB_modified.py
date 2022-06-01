@@ -100,10 +100,12 @@ mapping = {"lung":["lung","pulmonary","lungs"],
 ############ OBSERVATION ##########
 mapping_observation = {
         "effusion":["effusions","effusion"],
-        "enlarged":["enlarged","large","larger","expanded","well - expanded","hyperexpansion","enlargement","increased","increase","exaggerated","widening","widened","distention","distension"],
+        "enlarged":["enlarged","large","larger","expanded","well - expanded","hyperexpansion","enlargement",
+                    "increased","increase","exaggerated","widening","widened","distention","distension","hyperinflated",
+                    "hyperexpanded"],
         "opacity":["opacity","opacities","opacified","opacification","obscures","obscuring","indistinct","indistinctness","haziness","not less distinct","blurring"],
         "thickening":["thickening","thickenings"],
-        "drain":["drains","drain"],
+        "drain":["drains","drain","fluid"],
         "normal":["normal","stable","unremarkable","top - normal","unchanged"],
         "clear":["clear"],
         "decrease":["decreased","lower","low","decrease"],
@@ -226,7 +228,7 @@ for key in data.keys():  # key : "p18/p18004941/s58821758.txt"
                                         obs_modified = mapping_name(mapping_observation, entity["tokens"].lower())  # entity['tokens'] = 'cancer'
                                         if obs_modified == None:  # if it couldnot find its name in values of OBS_mapping
                                             obs_modified = entity["tokens"].lower()
-                                        OBS_with_modify = entity_4["tokens"].lower() + "<>" + obs_modified  # 3cm cancer
+                                        OBS_with_modify = obs_modified  # 3cm cancer
 
                                         organ_after_mapping = mapping_name(mapping, organ_lower_token)
                                         if organ_after_mapping == None:
@@ -255,8 +257,19 @@ for key in data.keys():  # key : "p18/p18004941/s58821758.txt"
                     output_dict = {organ: {organ_modify.lower(): [OBS_with_modify]}}
                     final_dict = update_dict(final_dict,output_dict)
 
-for key, ls in final_dict['mediastinum'].items():
-    print({key:ls})
+for key, ls in final_dict['vascular'].items():
+    #key:'left'         ls:['large','larged']
+    #mapping
+    for i in range(len(ls)):
+        af_mapping = mapping_name(mapping_observation,ls[i])
+        if af_mapping == None:
+            af_mapping = ls[i]
+        ls[i] = af_mapping
+    #distinct
+    result = Counter(ls)
+    sorted_result = sorted(result.items(), key=lambda x: x[1], reverse=True)
+
+    print({key:sorted_result})
     #print('/n')
 
 #print(final_dict['lung'])
