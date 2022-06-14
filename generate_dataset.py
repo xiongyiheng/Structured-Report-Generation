@@ -18,6 +18,9 @@ import os
 from collections import Counter
 
 
+global count
+count=0
+
 def del_space(s):
     #input: string
     #output: children-string after the space
@@ -25,7 +28,104 @@ def del_space(s):
     if " " in s:
         output = s.split()[-1]
 
-    return output
+        return output
+    else:
+        return s
+
+def write_json(data,file_path):#'D:/studium/MIML/radgraph/radgraph/train_add_sug.json'
+    with open(file_path, 'w') as outfile:
+        json.dump(data, outfile)
+
+def gen_dict_for_each_report(organ,organ_modify,OBS_with_modify,OBS_label,dict_each_report,masked_each_report,ref_dict):
+
+    global count
+    # dic = {"organ":{"organ_modify":[3cm cancer]}}
+    # output = {organ:{organ_modify:[clear, 3cm cancer]}}
+    # dict_each_report = {
+    #                   lung:  {
+    #                           lung:[0,1,0,1...]
+    #                           left:[1,1,0,]
+    #                     heart:{...
+    #                           }
+    #
+    #                    }
+    #           }
+    #masked_each_report in same format as dict_each_report, BUT "1" means it has such masks in the corressponding lables in this label,
+
+    if organ and organ_modify and OBS_with_modify:       #output the dataset only if the organ and organ_modify and observation in the mapping list
+        if organ in ref_dict.keys():
+            if organ_modify in ref_dict[organ].keys():
+                ls = ref_dict[organ][organ_modify]
+                for i in range(len(ls)):
+                    if OBS_with_modify == ls[i]:
+                        if OBS_label == 'DP':
+                            print("ja")
+                            count +=1
+                            dict_each_report[organ][organ_modify][i] = 1
+                            masked_each_report[organ][organ_modify][i] = 1
+                        elif OBS_label == 'DA':
+                            print("nein")
+                            count += 1
+                            dict_each_report[organ][organ_modify][i] = 0
+                            masked_each_report[organ][organ_modify][i] = 1
+                        else: # if possible -> regard it as 'DP'
+                            print("ja")
+                            count += 1
+                            dict_each_report[organ][organ_modify][i] = 1
+                            masked_each_report[organ][organ_modify][i] = 1
+
+    return dict_each_report,masked_each_report
+
+def gen_dataset(dataset,id,dict_each_report,masked_each_report):
+    ##########  dataset ={"report id":
+        #                   {lung:  {
+        #                           lung:{ 'edema', 'no clear',...
+        #                                   }
+        #                           left:{'no edema', 'clear'
+        #                            }
+        #                     heart:{...
+        #                           }
+        #                     labels:[1,0,1,0,......]
+        #                     mask:[1,1,1,0,....]
+        #                    }
+        #                  "report id2":{...}
+    labels_ls = []
+    mask_ls = []
+    ### flatten all attributes into one list
+    for key,ls in dict_each_report.items():
+        inner_dic = dict_each_report[key]
+        for key1,ls1 in inner_dic.items():
+            labels_ls.extend(ls1)
+
+    for key,ls in masked_each_report.items():
+        inner_dic = masked_each_report[key]
+        for key1,ls1 in inner_dic.items():
+            mask_ls.extend(ls1)
+    ### generate the final dataset
+    dataset[id] = {'labels':labels_ls,
+                    'mask':mask_ls}
+
+    return dataset
+
+
+def update_dict(final_dict, dic):
+    # final_dict = {}
+    # dic = {"organ":{"organ_modify":[3cm cancer]}}
+    # output = {organ:{organ_modify:[clear, 3cm cancer]}}
+    for key, ls in dic.items():
+        if key not in final_dict.keys():
+            final_dict.update(dic)
+        else:
+            inner_dic = dic[key]
+            inner_final_dic = final_dict[key]
+            for inner_key, inner_ls in inner_dic.items():  # "organ_modify":[clear]
+                if inner_key not in inner_final_dic.keys():
+                    # inner_final_dic.update(inner_dic)   #need check if final_dict also updates
+                    final_dict[key][inner_key] = inner_dic[inner_key]  # add the first [clear]
+                else:
+                    final_dict[key][inner_key].append(dic[key][inner_key][0])
+
+    return final_dict
 
 
 # p = os.getcwd().
@@ -74,24 +174,17 @@ def mapping_observations(mapping_observation,dic):
 
     return out_dict
 
-def update_dict(final_dict,dic):
-    #final_dict = {}
-    #dic = {"organ":{"organ_modify":[3cm cancer]}}
-    #output = {organ:{organ_modify:[clear, 3cm cancer]}}
-    for key, ls in dic.items():
-        if key not in final_dict.keys():
-            final_dict.update(dic)
-        else:
-            inner_dic = dic[key]
-            inner_final_dic = final_dict[key]
-            for inner_key, inner_ls in inner_dic.items():   #"organ_modify":[clear]
-                if inner_key not in inner_final_dic.keys():
-                    #inner_final_dic.update(inner_dic)   #need check if final_dict also updates
-                    final_dict[key][inner_key] = inner_dic[inner_key]    # add the first [clear]
-                else:
-                    final_dict[key][inner_key].append(dic[key][inner_key][0])
+def gen_init_dict_for_each_report(ref_dict):
+    ###generate the initial version of dict for each report
 
-    return final_dict
+    output = ref_dict.copy()
+    for key,ls in output.items():
+        inner_dic = output[key]
+        for key1, ls1 in inner_dic.items():
+            for i in range(len(ls1)):
+                ls1[i] = 0
+    # if cant find the key
+    return output
 
 
 
@@ -111,11 +204,6 @@ mapping = {"lung":["lung","pulmonary","lungs"],
            "stomach":["stomach","gastric"],
            "spine":["spine"]
             }
-
-
-
-
-
 
 
 ############ OBSERVATION ##########
@@ -149,22 +237,22 @@ mapping_observation = {
 }
 
 mappig_subpart = {
-	"lung":["lung","pulmonary","lungs"],
-	"pleural":["pleural","plerual"],
-	"heart":["heart","cardiac","retrocardiac"],
-	"mediastinum":["mediastinal","cardiomediastinal","mediastinum"],
-	"vascular":["vascular","vasculature","bronchovascular","venous","aortic","vein","arteries","vasculatiry","aorta","artery","vessel","vessels"],
-	"right": ["right", "right - sided", "right sided"],
-	"left": ["left", "left - sided"],
-	"contour": ["contour", "silhouette", "silhouettes", "contours"],
-	"structure": ["structure", "structures"],
-	"surface": ["surface", "surfaces"],
-	"bilateral": ["bilateral", "bilaterally"],
-	"base":["base", "bases"],
-	"lower":["lower"],
-	"mid":["mid"],
-	"upper":["upper"],
-	"volume": ["volume", "volumes"]
+        "lung":["lung","pulmonary","lungs"],
+        "pleural":["pleural","plerual"],
+        "heart":["heart","cardiac","retrocardiac"],
+        "mediastinum":["mediastinal","cardiomediastinal","mediastinum"],
+        "vascular":["vascular","vasculature","bronchovascular","venous","aortic","vein","arteries","vasculatiry","aorta","artery","vessel","vessels"],
+        "right": ["right", "right - sided", "right sided"],
+        "left": ["left", "left - sided"],
+        "contour": ["contour", "silhouette", "silhouettes", "contours"],
+        "structure": ["structure", "structures"],
+        "surface": ["surface", "surfaces"],
+        "bilateral": ["bilateral", "bilaterally"],
+        "base":["base", "bases"],
+        "lower":["lower"],
+        "mid":["mid"],
+        "upper":["upper"],
+        "volume": ["volume", "volumes"]
 }
 
 
@@ -180,14 +268,25 @@ ref_dict = {'lung':{'lung':['edema', 'clear', 'consolidation', 'enlarged', 'norm
                        'structure':['normal', 'abnormal']},
         'vascular':{'vascular':['congested', 'calcification', 'crowding']}
 }
+ref_dict1 = {'lung':{'lung':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'],
+            'volume':['decrease'],
+         'left':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'right':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'lower':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'mid':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'],  'upper':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'vascular':['normal', 'abnormal', 'congested'], 'base':['atelectasis', 'opacity']},
+        'pleural':{'pleural':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'right':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'left':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'bilateral':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'surface':['normal', 'abnormal', 'clear', 'effusion']},
+        'heart':{'heart':['normal', 'abnormal', 'opacity', 'atelectasis', 'consolidation'],
+                 'size':['normal','abnormal','enlarged'], 'contour':['normal', 'abnormal', 'enlarged'],
+                'left':['normal', 'abnormal', 'opacity', 'atelectasis', 'consolidation']},
+        'mediastinum':{'mediastinum':['normal', 'abnormal', 'enlarged', 'shift'],
+                       'contour':['normal', 'abnormal', 'enlarged'],
+                       'structure':['normal', 'abnormal']},
+        'vascular':{'vascular':['congested', 'calcification', 'crowding']}
+}
 
+count = 0
 dataset = {}
 
 final_dict={}
 
-
-
-with open('~/MIML/radgraph/train.json', 'r') as f:
+with open('D:/studium/MIML/radgraph/radgraph/train_add_sug.json', 'r') as f:
     data = json.load(f)
 
 organs = []
@@ -201,6 +300,9 @@ observation_dict = create_dict_from_dict(mapping)
 for key in data.keys():  # key : "p18/p18004941/s58821758.txt"
     new_dict = data[key]
     entities = new_dict['entities']
+    dict_each_report = gen_init_dict_for_each_report(ref_dict1)
+    masked_each_report = gen_init_dict_for_each_report(ref_dict1)
+
     for new_key in entities.keys():
         entity = entities[new_key]     #entity can be "6":{}      "cancer"
         relations = entity['relations']
@@ -241,6 +343,7 @@ for key in data.keys():  # key : "p18/p18004941/s58821758.txt"
                                                 if obs_modified == None:# if it couldnot find its name in values of OBS_mapping
                                                     obs_modified = entity["tokens"].lower()
                                                 OBS_with_modify = entity_4["tokens"].lower() + " " +obs_modified  #3cm cancer
+                                                #OBS_label = label_4[-2:] # "DP" or "DA" or ..
 
 
 
@@ -254,14 +357,15 @@ for key in data.keys():  # key : "p18/p18004941/s58821758.txt"
 
                                 if not found_modify_OBS: # not found OBS_modify but found Organ_modify
                                     obs_modified = mapping_name(mapping_observation,entity["tokens"].lower())
-                                    if obs_modified == None:  # if it couldnot find its name in values of OBS_mapping
-                                        obs_modified = entity["tokens"].lower()      # cancer
+                                    # if obs_modified == None:  # if it couldnot find its name in values of OBS_mapping
+                                    #     obs_modified = entity["tokens"].lower()      # cancer
                                     OBS_with_modify = obs_modified
+                                    #OBS_label = label_4[-2:]
 
                                     organ_after_mapping = mapping_name(mapping, organ_lower_token)
-                                    if organ_after_mapping == None:
-                                        organ_after_mapping = organ_lower_token  # lung
-                                    organ_modify = entity_3['tokens']  # left
+                                    # if organ_after_mapping == None:
+                                    #     organ_after_mapping = organ_lower_token  # lung
+                                    organ_modify = mapping_name(mapping_observation,entity_3['tokens'])  # left
                                     organ = organ_after_mapping
 
 
@@ -281,25 +385,27 @@ for key in data.keys():  # key : "p18/p18004941/s58821758.txt"
                                         found_modify_OBS = True
                                         obs_modified = mapping_name(mapping_observation, entity["tokens"].lower())  # entity['tokens'] = 'cancer'
                                         if obs_modified == None:  # if it couldnot find its name in values of OBS_mapping
-                                            obs_modified = entity["tokens"].lower()
-                                        OBS_with_modify = entity_4["tokens"].lower() + "<>" + obs_modified  # 3cm cancer
+                                            #obs_modified = entity["tokens"].lower()
+                                            OBS_with_modify = None
+                                        else:
+                                            OBS_with_modify = entity_4["tokens"].lower() + "<>" + obs_modified  # 3cm cancer
 
                                         organ_after_mapping = mapping_name(mapping, organ_lower_token)
-                                        if organ_after_mapping == None:
-                                            organ_after_mapping = organ_lower_token  # lung
+                                        # if organ_after_mapping == None:
+                                        #     organ_after_mapping = organ_lower_token  # lung
                                         organ_modify = organ_after_mapping  # lung
                                         organ = organ_after_mapping  # lung
 
                         if not found_modify_OBS:  # not found OBS_modify nor found Organ_modify
 
                             obs_modified = mapping_name(mapping_observation, entity["tokens"].lower())
-                            if obs_modified == None:  # if it couldnot find its name in values of OBS_mapping
-                                obs_modified = entity["tokens"].lower()  # cancer
+                            # if obs_modified == None:  # if it couldnot find its name in values of OBS_mapping
+                            #     obs_modified = entity["tokens"].lower()  # cancer
                             OBS_with_modify = obs_modified
 
                             organ_after_mapping = mapping_name(mapping, organ_lower_token)
-                            if organ_after_mapping == None:
-                                organ_after_mapping = organ_lower_token  # lung
+                            # if organ_after_mapping == None:
+                            #     organ_after_mapping = organ_lower_token  # lung
                             organ_modify = organ_after_mapping  # lung
                             organ = organ_after_mapping  # lung
 
@@ -307,19 +413,24 @@ for key in data.keys():  # key : "p18/p18004941/s58821758.txt"
                         #organ_modify = organ_lower_token
                                 #### mapping organs' name ####
                         #{organ_after_mapping:[]}
+                    organ_modify = mapping_name(mappig_subpart,organ_modify)
+                    if OBS_with_modify:
+                        OBS_with_modify = del_space(OBS_with_modify)
+                    ### add OBS_label as output, in order to make sure that a OBS present or not in a report
+                    OBS_label = entity['label'][-2:]
 
-                    output_dict = {organ: {organ_modify.lower(): [OBS_with_modify]}}
-                    final_dict = update_dict(final_dict,output_dict)
+                    #output_dict = {organ: {organ_modify.lower(): [OBS_with_modify]}}
 
-    dataset = {key:
-                   {}
+                    dict_each_report,masked_each_report = gen_dict_for_each_report(organ,organ_modify,OBS_with_modify,OBS_label,dict_each_report,masked_each_report,ref_dict)
+    dataset = gen_dataset(dataset,key,dict_each_report,masked_each_report)
 
-               }
+write_json(dataset,'D:/studium/MIML/radgraph/radgraph/final_dataset.json')
+print(count)
+                    #final_dict = update_dict(final_dict,output_dict)
 
 
-
-for key, ls in final_dict['mediastinum'].items():
-    print({key:ls})
+# for key, ls in final_dict['mediastinum'].items():
+#     print({key:ls})
     #print('/n')
 
 #print(final_dict['lung'])
@@ -342,7 +453,6 @@ for key, ls in final_dict['mediastinum'].items():
 
 #print(observation_dict)# == observation_dict["lung"])
 #print(out_dict["lung"])
-
 
 
 
