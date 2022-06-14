@@ -37,6 +37,7 @@ def write_json(data,file_path):#'D:/studium/MIML/radgraph/radgraph/train_add_sug
         json.dump(data, outfile)
 
 def gen_dict_for_each_report(organ,organ_modify,OBS_with_modify,OBS_label,dict_each_report,masked_each_report,ref_dict):
+    #todo: if normal -> other attributes in this sub part are all 0 and masked = 1?
 
     global count
     # dic = {"organ":{"organ_modify":[3cm cancer]}}
@@ -236,7 +237,7 @@ mapping_observation = {
 
 }
 
-mappig_subpart = {
+mapping_subpart = {
         "lung":["lung","pulmonary","lungs"],
         "pleural":["pleural","plerual"],
         "heart":["heart","cardiac","retrocardiac"],
@@ -281,7 +282,6 @@ ref_dict1 = {'lung':{'lung':['edema', 'clear', 'consolidation', 'enlarged', 'nor
         'vascular':{'vascular':['congested', 'calcification', 'crowding']}
 }
 
-count = 0
 dataset = {}
 
 final_dict={}
@@ -365,7 +365,7 @@ for key in data.keys():  # key : "p18/p18004941/s58821758.txt"
                                     organ_after_mapping = mapping_name(mapping, organ_lower_token)
                                     # if organ_after_mapping == None:
                                     #     organ_after_mapping = organ_lower_token  # lung
-                                    organ_modify = mapping_name(mapping_observation,entity_3['tokens'])  # left
+                                    organ_modify = mapping_name(mapping_subpart,entity_3['tokens'])  # left
                                     organ = organ_after_mapping
 
 
@@ -413,7 +413,7 @@ for key in data.keys():  # key : "p18/p18004941/s58821758.txt"
                         #organ_modify = organ_lower_token
                                 #### mapping organs' name ####
                         #{organ_after_mapping:[]}
-                    organ_modify = mapping_name(mappig_subpart,organ_modify)
+                    organ_modify = mapping_name(mapping_subpart,organ_modify)
                     if OBS_with_modify:
                         OBS_with_modify = del_space(OBS_with_modify)
                     ### add OBS_label as output, in order to make sure that a OBS present or not in a report
