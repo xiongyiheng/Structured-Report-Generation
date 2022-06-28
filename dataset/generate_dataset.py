@@ -20,6 +20,9 @@ from collections import Counter
 
 global count
 count=0
+OB_modified = False
+
+
 
 def del_space(s):
     #input: string
@@ -175,7 +178,7 @@ def mapping_observations(mapping_observation,dic):
 
     return out_dict
 
-def gen_init_dict_for_each_report(ref_dict):
+def gen_init_dict_for_each_report(ref_dict,mask = False):
     ###generate the initial version of dict for each report
 
     output = ref_dict.copy()
@@ -183,27 +186,89 @@ def gen_init_dict_for_each_report(ref_dict):
         inner_dic = output[key]
         for key1, ls1 in inner_dic.items():
             for i in range(len(ls1)):
-                ls1[i] = 0
+                if mask:
+                    ls1[i]=0
+                else:
+                    if ls1[i] == "clear" or ls1[i] == "normal":
+                        ls1[i] = 1
+                    else:
+                        ls1[i]=0
     # if cant find the key
     return output
 
 
 
 
-mapping = {"lung":["lung","pulmonary","lungs"],
+mapping = {"lung":["lung","pulmonary","lungs","midlung","subpulmonic"],
            "pleural":["pleural","plerual"],
             "heart":["heart","cardiac","retrocardiac"],
            "mediastinum":["mediastinal","cardiomediastinal","mediastinum"],
            "lobe":["lobe","lobar","lobes"],
-            "hilar":["hilar","hila","hilus","perihilar"],
-           "vascular":["vascular","vasculature","bronchovascular","venous","aortic","vein","arteries","vasculatiry","aorta","artery","vessel","vessels"],
-           "chest":["chest","thorax","pectus"],
+            "hilar":["hilar","hila","hilus","perihilar","suprahilar"],
+           "vascular":["vascular","coronary",'internal jugular',"intravascular","vasculature","bronchovascular","venous","aortic","vein","arteries","vasculatiry","aorta","artery","vessel","vessels", "vascularity", "superior vena cava", "jugular"],
+           "chest":["chest","thorax","pectus", "intrathoracic","hemithorax"],
            "cardiopulmonary":["cardiopulmonary"],
-            "basilar":["bibasilar","basilar","base","bibasal","basal","bases"],
-           "diaphragm":["hemidiaphragm","diaphragm","hemidiaphragms"],
-           "rib":["rib","ribs"],
+           "basilar":["bibasilar","basilar","base","bibasal","basal","bases"],
+           "diaphragm":["hemidiaphragm","diaphragm","hemidiaphragms","diaphragms"],
+           "rib":["rib","ribs", "ribcage", "costophrenic"],
            "stomach":["stomach","gastric"],
-           "spine":["spine"]
+           "spine":["spine","vertebral","spinal","paraspinal","t 12 vertebral","thoracolumbar"],
+           "carina":["carina"],
+           "esophagus":["esophagus"],
+           "apex":["apex"],
+           "osseous":["osseous"],
+           "esophagogastric":["esophagogastric","gastroesophageal"],
+           "bony":["bony","bones","skeletal"],
+           "quadrant":["quadrant"],
+           "sternal":["sternal","thoracic"],
+           "svc":["svc"],
+           "subclavian":["subclavian","clavicle"],
+           "atrium":["atrium"],
+           "valve":["valve"],
+           "pericardial":["pericardial"],
+           "skin":["skin","cutaneous"],
+           "airway":["airway","airspace"],
+           "institial":["institial"],
+           "interstitial":["interstitial"],
+           "parenchymal":["parenchymal"],
+           "line":["line", "lines"],
+           "fissure":["fissure"],
+           "junction":["junction", "cavoatrial junction"],
+           "lingular":["lingular","lingula"],
+           "valvular":["valvular"],
+           "infrahilar":["infrahilar"],
+           "biapical":["biapical"],
+           "neck":["neck"],
+           "apical":["apical"],
+           "paratracheal":["paratracheal", "trachea","peribronchial","bronchial"],
+           "thyroid":["thyroid"],
+           "ge":["ge"],
+           "axillary":["axillary","axilla"],
+           "ventricle":["ventricle","ventricular","cavoatrial","biventricular'"],
+           "left arm":["left arm"],
+           "scapula":["scapula"],
+           "subcutaneous":["subcutaneous", "subcutaneus"],
+           "soft tissues":["soft tissues", "soft tissue"],
+           "ij":["ij"],
+           "sheath":["sheath"],
+           "alveolar":["alveolar"],
+           "pylorus":["pylorus"],
+           "subsegmental":["subsegmental"],
+           "lumbar":["lumbar"],
+           "abdomen":["abdomen"],
+           "duodenum":["duodenum"],
+           "fundus":["fundus"],
+           "inlet":["inlet"],
+           "subdiaphragmatic":["subdiaphragmatic"],
+           "cervical":["cervical"],
+           "zone":["zone"],
+           "volumes":["volumes"],
+           "tube":["tube","tubes"],
+           "bowel":["bowel"],
+           "annulus":["annulus"],
+           "cavitary":["cavitary"],
+           "interstitium":["interstitium"],
+           "cage":["cage"]
             }
 
 
@@ -238,11 +303,76 @@ mapping_observation = {
 }
 
 mapping_subpart = {
-        "lung":["lung","pulmonary","lungs"],
-        "pleural":["pleural","plerual"],
+        "lung":["lung","pulmonary","lungs","midlung","subpulmonic"],
+       "pleural":["pleural","plerual"],
         "heart":["heart","cardiac","retrocardiac"],
-        "mediastinum":["mediastinal","cardiomediastinal","mediastinum"],
-        "vascular":["vascular","vasculature","bronchovascular","venous","aortic","vein","arteries","vasculatiry","aorta","artery","vessel","vessels"],
+       "mediastinum":["mediastinal","cardiomediastinal","mediastinum"],
+       "lobe":["lobe","lobar","lobes"],
+        "hilar":["hilar","hila","hilus","perihilar","suprahilar"],
+       "vascular":["vascular","coronary",'internal jugular',"intravascular","vasculature","bronchovascular","venous","aortic","vein","arteries","vasculatiry","aorta","artery","vessel","vessels", "vascularity", "superior vena cava", "jugular"],
+       "chest":["chest","thorax","pectus", "intrathoracic","hemithorax"],
+       "cardiopulmonary":["cardiopulmonary"],
+       "basilar":["bibasilar","basilar","base","bibasal","basal","bases"],
+       "diaphragm":["hemidiaphragm","diaphragm","hemidiaphragms","diaphragms"],
+       "rib":["rib","ribs", "ribcage", "costophrenic"],
+       "stomach":["stomach","gastric"],
+       "spine":["spine","vertebral","spinal","paraspinal","t 12 vertebral","thoracolumbar"],
+       "carina":["carina"],
+       "esophagus":["esophagus"],
+       "apex":["apex"],
+       "osseous":["osseous"],
+       "esophagogastric":["esophagogastric","gastroesophageal"],
+       "bony":["bony","bones","skeletal"],
+       "quadrant":["quadrant"],
+       "sternal":["sternal","thoracic"],
+       "svc":["svc"],
+       "subclavian":["subclavian","clavicle"],
+       "atrium":["atrium"],
+       "valve":["valve"],
+       "pericardial":["pericardial"],
+       "skin":["skin","cutaneous"],
+       "airway":["airway","airspace"],
+       "institial":["institial"],
+       "interstitial":["interstitial"],
+       "parenchymal":["parenchymal"],
+       "line":["line", "lines"],
+       "fissure":["fissure"],
+       "junction":["junction", "cavoatrial junction"],
+       "lingular":["lingular","lingula"],
+       "valvular":["valvular"],
+       "infrahilar":["infrahilar"],
+       "biapical":["biapical"],
+       "neck":["neck"],
+       "apical":["apical"],
+       "paratracheal":["paratracheal", "trachea","peribronchial","bronchial"],
+       "thyroid":["thyroid"],
+       "ge":["ge"],
+       "axillary":["axillary","axilla"],
+       "ventricle":["ventricle","ventricular","cavoatrial","biventricular'"],
+       "left arm":["left arm"],
+       "scapula":["scapula"],
+       "subcutaneous":["subcutaneous", "subcutaneus"],
+       "soft tissues":["soft tissues", "soft tissue"],
+       "ij":["ij"],
+       "sheath":["sheath"],
+       "alveolar":["alveolar"],
+       "pylorus":["pylorus"],
+       "subsegmental":["subsegmental"],
+       "lumbar":["lumbar"],
+       "abdomen":["abdomen"],
+       "duodenum":["duodenum"],
+       "fundus":["fundus"],
+       "inlet":["inlet"],
+       "subdiaphragmatic":["subdiaphragmatic"],
+       "cervical":["cervical"],
+       "zone":["zone"],
+       "volumes":["volumes"],
+       "tube":["tube","tubes"],
+       "bowel":["bowel"],
+       "annulus":["annulus"],
+       "cavitary":["cavitary"],
+       "interstitium":["interstitium"],
+       "cage":["cage"],
         "right": ["right", "right - sided", "right sided"],
         "left": ["left", "left - sided"],
         "contour": ["contour", "silhouette", "silhouettes", "contours"],
@@ -257,30 +387,44 @@ mapping_subpart = {
 }
 
 
-ref_dict = {'lung':{'lung':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'],
-            'volume':['decrease'],
-         'left':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'right':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'lower':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'mid':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'],  'upper':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'vascular':['normal', 'abnormal', 'congested'], 'base':['atelectasis', 'opacity']},
-        'pleural':{'pleural':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'right':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'left':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'bilateral':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'surface':['normal', 'abnormal', 'clear', 'effusion']},
-        'heart':{'heart':['normal', 'abnormal', 'opacity', 'atelectasis', 'consolidation'],
-                 'size':['normal','abnormal','enlarged'], 'contour':['normal', 'abnormal', 'enlarged'],
-                'left':['normal', 'abnormal', 'opacity', 'atelectasis', 'consolidation']},
-        'mediastinum':{'mediastinum':['normal', 'abnormal', 'enlarged', 'shift'],
-                       'contour':['normal', 'abnormal', 'enlarged'],
-                       'structure':['normal', 'abnormal']},
-        'vascular':{'vascular':['congested', 'calcification', 'crowding']}
-}
-ref_dict1 = {'lung':{'lung':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'],
-            'volume':['decrease'],
-         'left':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'right':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'lower':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'mid':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'],  'upper':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'vascular':['normal', 'abnormal', 'congested'], 'base':['atelectasis', 'opacity']},
-        'pleural':{'pleural':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'right':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'left':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'bilateral':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'surface':['normal', 'abnormal', 'clear', 'effusion']},
-        'heart':{'heart':['normal', 'abnormal', 'opacity', 'atelectasis', 'consolidation'],
-                 'size':['normal','abnormal','enlarged'], 'contour':['normal', 'abnormal', 'enlarged'],
-                'left':['normal', 'abnormal', 'opacity', 'atelectasis', 'consolidation']},
-        'mediastinum':{'mediastinum':['normal', 'abnormal', 'enlarged', 'shift'],
-                       'contour':['normal', 'abnormal', 'enlarged'],
-                       'structure':['normal', 'abnormal']},
-        'vascular':{'vascular':['congested', 'calcification', 'crowding']}
-}
+# ref_dict = {'lung':{'lung':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'],
+#             'volume':['decrease'],
+#          'left':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'right':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'lower':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'mid':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'],  'upper':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'vascular':['normal', 'abnormal', 'congested'], 'base':['atelectasis', 'opacity']},
+#         'pleural':{'pleural':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'right':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'left':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'bilateral':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'surface':['normal', 'abnormal', 'clear', 'effusion']},
+#         'heart':{'heart':['normal', 'abnormal', 'opacity', 'atelectasis', 'consolidation'],
+#                  'size':['normal','abnormal','enlarged'], 'contour':['normal', 'abnormal', 'enlarged'],
+#                 'left':['normal', 'abnormal', 'opacity', 'atelectasis', 'consolidation']},
+#         'mediastinum':{'mediastinum':['normal', 'abnormal', 'enlarged', 'shift'],
+#                        'contour':['normal', 'abnormal', 'enlarged'],
+#                        'structure':['normal', 'abnormal']},
+#         'vascular':{'vascular':['congested', 'calcification', 'crowding']}
+# }
+# ref_dict1 = {'lung':{'lung':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'],
+#             'volume':['decrease'],
+#          'left':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'right':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'lower':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'mid':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'],  'upper':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'vascular':['normal', 'abnormal', 'congested'], 'base':['atelectasis', 'opacity']},
+#         'pleural':{'pleural':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'right':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'left':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'bilateral':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'surface':['normal', 'abnormal', 'clear', 'effusion']},
+#         'heart':{'heart':['normal', 'abnormal', 'opacity', 'atelectasis', 'consolidation'],
+#                  'size':['normal','abnormal','enlarged'], 'contour':['normal', 'abnormal', 'enlarged'],
+#                 'left':['normal', 'abnormal', 'opacity', 'atelectasis', 'consolidation']},
+#         'mediastinum':{'mediastinum':['normal', 'abnormal', 'enlarged', 'shift'],
+#                        'contour':['normal', 'abnormal', 'enlarged'],
+#                        'structure':['normal', 'abnormal']},
+#         'vascular':{'vascular':['congested', 'calcification', 'crowding']}
+# }
+
+
+# a_file = open("organ_loc_ob.json", "r")
+# ref_dict = a_file.read()
+# a_file.close()
+#
+# a_file = open("organ_loc_ob.json", "r")
+# ref_dict1 = a_file.read()
+# a_file.close()
+
+with open("organ_loc_ob.json", 'r') as f:
+    ref_dict = json.load(f)
+with open("organ_loc_ob.json", 'r') as f:
+    ref_dict1 = json.load(f)
 
 dataset = {}
 
@@ -300,8 +444,12 @@ observation_dict = create_dict_from_dict(mapping)
 for key in data.keys():  # key : "p18/p18004941/s58821758.txt"
     new_dict = data[key]
     entities = new_dict['entities']
+    with open("organ_loc_ob.json", 'r') as f:
+        ref_dict1 = json.load(f)
     dict_each_report = gen_init_dict_for_each_report(ref_dict1)
-    masked_each_report = gen_init_dict_for_each_report(ref_dict1)
+    with open("organ_loc_ob.json", 'r') as f:
+        ref_dict1 = json.load(f)
+    masked_each_report = gen_init_dict_for_each_report(ref_dict1,mask=True)
 
     for new_key in entities.keys():
         entity = entities[new_key]     #entity can be "6":{}      "cancer"
@@ -342,10 +490,10 @@ for key in data.keys():  # key : "p18/p18004941/s58821758.txt"
                                                 obs_modified = mapping_name(mapping_observation,entity["tokens"].lower()) #entity['tokens'] = 'cancer'
                                                 if obs_modified == None:# if it couldnot find its name in values of OBS_mapping
                                                     obs_modified = entity["tokens"].lower()
-                                                OBS_with_modify = entity_4["tokens"].lower() + " " +obs_modified  #3cm cancer
-                                                #OBS_label = label_4[-2:] # "DP" or "DA" or ..
-
-
+                                                if OB_modified == False: #no ob_modified
+                                                    OBS_with_modify = entity_4["tokens"].lower()  #3cm cancer
+                                                else:
+                                                    OBS_with_modify = entity_4["tokens"].lower() + " " + obs_modified  # 3cm cancer
 
                                                 organ_after_mapping = mapping_name(mapping,organ_lower_token)
                                                 if organ_after_mapping == None:
@@ -357,15 +505,14 @@ for key in data.keys():  # key : "p18/p18004941/s58821758.txt"
 
                                 if not found_modify_OBS: # not found OBS_modify but found Organ_modify
                                     obs_modified = mapping_name(mapping_observation,entity["tokens"].lower())
-                                    # if obs_modified == None:  # if it couldnot find its name in values of OBS_mapping
-                                    #     obs_modified = entity["tokens"].lower()      # cancer
+                                    if obs_modified == None:  # if it couldnot find its name in values of OBS_mapping
+                                        obs_modified = entity["tokens"].lower()      # cancer
                                     OBS_with_modify = obs_modified
-                                    #OBS_label = label_4[-2:]
 
                                     organ_after_mapping = mapping_name(mapping, organ_lower_token)
-                                    # if organ_after_mapping == None:
-                                    #     organ_after_mapping = organ_lower_token  # lung
-                                    organ_modify = mapping_name(mapping_subpart,entity_3['tokens'])  # left
+                                    if organ_after_mapping == None:
+                                        organ_after_mapping = organ_lower_token  # lung
+                                    organ_modify = entity_3['tokens']  # left
                                     organ = organ_after_mapping
 
 
@@ -385,27 +532,28 @@ for key in data.keys():  # key : "p18/p18004941/s58821758.txt"
                                         found_modify_OBS = True
                                         obs_modified = mapping_name(mapping_observation, entity["tokens"].lower())  # entity['tokens'] = 'cancer'
                                         if obs_modified == None:  # if it couldnot find its name in values of OBS_mapping
-                                            #obs_modified = entity["tokens"].lower()
-                                            OBS_with_modify = None
+                                            obs_modified = entity["tokens"].lower()
+                                        if OB_modified == False:  # no ob_modified
+                                            OBS_with_modify = entity_4["tokens"].lower()  # 3cm cancer
                                         else:
-                                            OBS_with_modify = entity_4["tokens"].lower() + "<>" + obs_modified  # 3cm cancer
+                                            OBS_with_modify = entity_4["tokens"].lower() + " " + obs_modified  # 3cm cancer
 
                                         organ_after_mapping = mapping_name(mapping, organ_lower_token)
-                                        # if organ_after_mapping == None:
-                                        #     organ_after_mapping = organ_lower_token  # lung
+                                        if organ_after_mapping == None:
+                                            organ_after_mapping = organ_lower_token  # lung
                                         organ_modify = organ_after_mapping  # lung
                                         organ = organ_after_mapping  # lung
 
                         if not found_modify_OBS:  # not found OBS_modify nor found Organ_modify
 
                             obs_modified = mapping_name(mapping_observation, entity["tokens"].lower())
-                            # if obs_modified == None:  # if it couldnot find its name in values of OBS_mapping
-                            #     obs_modified = entity["tokens"].lower()  # cancer
+                            if obs_modified == None:  # if it couldnot find its name in values of OBS_mapping
+                                obs_modified = entity["tokens"].lower()  # cancer
                             OBS_with_modify = obs_modified
 
                             organ_after_mapping = mapping_name(mapping, organ_lower_token)
-                            # if organ_after_mapping == None:
-                            #     organ_after_mapping = organ_lower_token  # lung
+                            if organ_after_mapping == None:
+                                organ_after_mapping = organ_lower_token  # lung
                             organ_modify = organ_after_mapping  # lung
                             organ = organ_after_mapping  # lung
 
@@ -413,9 +561,12 @@ for key in data.keys():  # key : "p18/p18004941/s58821758.txt"
                         #organ_modify = organ_lower_token
                                 #### mapping organs' name ####
                         #{organ_after_mapping:[]}
-                    organ_modify = mapping_name(mapping_subpart,organ_modify)
-                    if OBS_with_modify:
-                        OBS_with_modify = del_space(OBS_with_modify)
+                    organ_modify_copy = organ_modify
+                    organ_modify = mapping_name(mapping_subpart,organ_modify_copy)
+                    if organ_modify == None:
+                        organ_modify = organ_modify_copy
+                    # if OBS_with_modify:
+                    #     OBS_with_modify = del_space(OBS_with_modify)
                     ### add OBS_label as output, in order to make sure that a OBS present or not in a report
                     OBS_label = entity['label'][-2:]
 
@@ -424,7 +575,7 @@ for key in data.keys():  # key : "p18/p18004941/s58821758.txt"
                     dict_each_report,masked_each_report = gen_dict_for_each_report(organ,organ_modify,OBS_with_modify,OBS_label,dict_each_report,masked_each_report,ref_dict)
     dataset = gen_dataset(dataset,key,dict_each_report,masked_each_report)
 
-write_json(dataset,'D:/studium/MIML/radgraph/radgraph/final_dataset.json')
+write_json(dataset, 'D:/studium/MIML/radgraph/radgraph/final_dataset_train.json')
 print(count)
                     #final_dict = update_dict(final_dict,output_dict)
 
