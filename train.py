@@ -15,7 +15,7 @@ from model.loss_helper import get_loss
 from radgraph.radgraph import Radgraph
 
 BATCH_SIZE = 16
-MAX_EPOCH = 100
+MAX_EPOCH = 15
 BASE_LEARNING_RATE = 0.001
 lr_decay_steps = '80,120,160'
 lr_decay_rates = '0.5,0.4,0.3'
@@ -36,7 +36,7 @@ print(len(TRAIN_DATALOADER), len(TEST_DATALOADER))
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-net = ResNet(BasicBlock, [3, 4, 6, 3])  # resnet34
+net = ResNet(Bottleneck, [3, 4, 6, 3])  # resnet34: [3, 4, 6, 3], resnet18: [2, 2, 2, 2]
 net.to(device)
 
 criterion = get_loss
@@ -139,12 +139,9 @@ def train(start_epoch):
         print('**** EPOCH %03d ****' % (epoch))
         print('Current learning rate: %f' % (get_current_lr(epoch)))
         print(str(datetime.now()))
-        # Reset numpy seed.
-        # REF: https://github.com/pytorch/pytorch/issues/5059
-        np.random.seed()
         loss = train_one_epoch()
         writer.add_scalar('train_loss', loss, EPOCH_CNT)
-        if EPOCH_CNT % 10 == 9:  # Eval every 10 epochs
+        if EPOCH_CNT % 1 == 0:  # Eval every epoch
             evaluate_one_epoch()
 
 

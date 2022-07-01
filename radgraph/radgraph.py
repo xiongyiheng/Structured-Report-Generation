@@ -35,7 +35,7 @@ class Radgraph(Dataset):
     def __getitem__(self, idx):
 
         report_id = self.idx[idx]
-        #group_id: p10, patient_id:p18004941, study_id = s588...
+        #g roup_id: p10, patient_id:p18004941, study_id = s588...
         [group_id,patient_id,study_id] = report_id.split('/')
         [study_id,_] = study_id.split('.')
         self.img_path = self.data_path+group_id+'/'+patient_id+'/'+study_id
@@ -68,13 +68,18 @@ class Radgraph(Dataset):
                 data = json.load(f)
         lb_ls = data[report_id]["labels"]
 
-        ###output
+        ### output
         rect = {}
         rect['gt_labels'] = torch.FloatTensor(lb_ls)
-        rect['imgs_ls'] = img_ls_tensor[0]
+        if len(img_ls_tensor) > 1:
+            from random import randrange
+            rect['imgs_ls'] = img_ls_tensor[randrange(2)]
+        else:
+            rect['imgs_ls'] = img_ls_tensor[0]
 
         return rect
 
 
 if __name__ == "__main__":
-    Data = Radgraph(is_train=True, is_augment=False, data_path="/home/mlmi-matthias/physionet.org/files/mimic-cxr-jpg/2.0.0/files/",label_path="/home/mlmi-kamilia/jingsong/StructuredReportGeneration/dataset/")
+    Data = Radgraph(is_train=True, is_augment=False, data_path="/home/mlmi-matthias/physionet.org/files/mimic-cxr-jpg/2.0.0/files/",
+                    label_path="/home/mlmi-kamilia/jingsong/StructuredReportGeneration/dataset/")
