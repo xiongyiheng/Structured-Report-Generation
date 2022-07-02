@@ -36,7 +36,7 @@ print(len(TRAIN_DATALOADER), len(TEST_DATALOADER))
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-net = ResNet(Bottleneck, [3, 4, 6, 3])  # resnet34: [3, 4, 6, 3], resnet18: [2, 2, 2, 2]
+net = ResNet(BasicBlock, [2, 2, 2, 2])  # resnet34: [3, 4, 6, 3], resnet18: [2, 2, 2, 2]
 net.to(device)
 
 criterion = get_loss

@@ -44,7 +44,7 @@ class Radgraph(Dataset):
         img_ls = []
         for file in os.listdir(self.img_path):
             if file.endswith('.jpg'):
-                img_ls.append(os.path.join(self.img_path,file))
+                img_ls.append(os.path.join(self.img_path, file))
 
         ### process the jpg files
         img_ls_tensor = []
@@ -52,7 +52,7 @@ class Radgraph(Dataset):
             image = Image.open(img_ls[i])
             transform = transforms.Compose([
                 transforms.Lambda(lambda image: torch.from_numpy(np.array(image).astype(np.float32)).unsqueeze(0)),
-                transforms.Resize([2000,2000]),
+                transforms.Resize([2000, 2000]),
                 transforms.Normalize([0], [255])
             ])
             a = transform(image)
@@ -71,12 +71,12 @@ class Radgraph(Dataset):
         ### output
         rect = {}
         rect['gt_labels'] = torch.FloatTensor(lb_ls)
-        if len(img_ls_tensor) > 1:
-            from random import randrange
-            rect['imgs_ls'] = img_ls_tensor[randrange(2)]
-        else:
-            rect['imgs_ls'] = img_ls_tensor[0]
-
+        #if len(img_ls_tensor) > 1:
+        #    from random import randrange
+        #    rect['imgs_ls'] = img_ls_tensor[randrange(2)]
+        #else:
+        #    rect['imgs_ls'] = img_ls_tensor[0]
+        rect['imgs_ls'] = img_ls_tensor[0]
         return rect
 
 
