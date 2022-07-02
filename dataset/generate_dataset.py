@@ -21,6 +21,7 @@ from collections import Counter
 global count
 count=0
 OB_modified = False
+splite = "train"
 
 
 
@@ -612,8 +613,10 @@ with open("organ_loc_ob.json", 'r') as f:
 dataset = {}
 
 final_dict={}
+if splite == "train":
+    splite_open = "train_add_sug"
 
-with open('D:/studium/MIML/radgraph/radgraph/dev.json', 'r') as f:
+with open('D:/studium/MIML/radgraph/radgraph/'+splite_open+'.json', 'r') as f:
     data = json.load(f)
 
 organs = []
@@ -758,7 +761,7 @@ for key in data.keys():  # key : "p18/p18004941/s58821758.txt"
                     dict_each_report,masked_each_report = gen_dict_for_each_report(organ,organ_modify,OBS_with_modify,OBS_label,dict_each_report,masked_each_report,ref_dict)
     dataset = gen_dataset(dataset,key,dict_each_report,masked_each_report)
 
-write_json(dataset, 'D:/studium/MIML/radgraph/radgraph/dev.json')
+write_json(dataset, 'D:/studium/MIML/radgraph/radgraph/final_dataset_'+splite+'.json')
 print(count)
                     #final_dict = update_dict(final_dict,output_dict)
 
