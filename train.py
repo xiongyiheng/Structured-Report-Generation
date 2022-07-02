@@ -122,7 +122,7 @@ def evaluate_one_epoch():
     stat_dict['val_loss'] = val_running_loss / len(TEST_DATALOADER)
     stat_dict['accuracy'] = (tp + tn) / (tp + tn + fp + fn)
     stat_dict['precision'] = tp / (tp + fp)
-    stat_dict['recall'] = tp / (fp + fn)
+    stat_dict['recall'] = tp / (tp + fn)
     stat_dict['f1-score'] = 2 * stat_dict['precision'] * stat_dict['recall'] / (
                 stat_dict['precision'] + stat_dict['recall'])
 
