@@ -621,6 +621,7 @@ for key in data.keys():  # key : "p18/p18004941/s58821758.txt"
 #     print({key:sorted_result})
     #print('/n')
 
+rem_ls = ['clear',"normal",'abnormal']
 
 for key_organ in final_dict.keys():
     for key, ls in final_dict[key_organ].items():
@@ -631,8 +632,25 @@ for key_organ in final_dict.keys():
             if af_mapping == None:
                 af_mapping = ls[i]
             ls[i] = af_mapping
-        final_dict[key_organ][key] = list(set(ls))
+        ### remove all general OB in label
+
+        ls = list(set(ls))
+        for e in ls:
+            if e in rem_ls: #if "clear" in ls
+                ls.remove(e)
+                #print(e)
+
+        final_dict[key_organ][key] = ls
 print(len(final_dict.keys()))
+
+for key_organ in final_dict.keys():
+    for key, ls in final_dict[key_organ].items():
+        for e in ls:
+            if e in rem_ls: #if "clear" in ls
+                ls.remove(e)
+                print(e)
+
+        final_dict[key_organ][key] = ls
 
 a_file = open("organ_loc_ob.json", "w")
 json.dump(final_dict, a_file)
