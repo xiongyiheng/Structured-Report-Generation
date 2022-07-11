@@ -1,4 +1,4 @@
-from radgraph.radgraph import Radgraph
+from datasets.radgraph.radgraph import Radgraph
 from torch.utils.data import DataLoader
 
 TRAIN_DATASET = Radgraph(True, False)

@@ -3,7 +3,7 @@ import torch.nn as nn
 
 def get_loss(pre_label, gt_label):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    POS_WEIGHT = torch.ones(899) * 3.0
+    POS_WEIGHT = torch.ones(812) * 5.0
     POS_WEIGHT = POS_WEIGHT.to(device)
     criterion = nn.BCEWithLogitsLoss(pos_weight=POS_WEIGHT)
     loss = criterion(pre_label, gt_label)

@@ -9,7 +9,7 @@ import json
 from torch.utils.data import Dataset
 
 class Radgraph(Dataset):
-    def __init__(self, is_train, is_augment, data_path="/home/mlmi-matthias/physionet.org/files/mimic-cxr-jpg/2.0.0/files/",label_path = "/home/mlmi-kamilia/jingsong/StructuredReportGeneration/dataset/"):
+    def __init__(self, is_train, is_augment, data_path="/home/mlmi-matthias/physionet.org/files/mimic-cxr-jpg/2.0.0/files/",label_path = "/home/mlmi-kamilia/jingsong/StructuredReportGeneration/datasets/"):
         # is_train: training set or val set
         # is_augment: augment or not
         super(Radgraph, self).__init__()
@@ -52,7 +52,7 @@ class Radgraph(Dataset):
             image = Image.open(img_ls[i])
             transform = transforms.Compose([
                 transforms.Lambda(lambda image: torch.from_numpy(np.array(image).astype(np.float32)).unsqueeze(0)),
-                transforms.Resize([2000, 2000]),
+                transforms.Resize([256, 256]),
                 transforms.Normalize([0], [255])
             ])
             a = transform(image)
@@ -82,4 +82,4 @@ class Radgraph(Dataset):
 
 if __name__ == "__main__":
     Data = Radgraph(is_train=True, is_augment=False, data_path="/home/mlmi-matthias/physionet.org/files/mimic-cxr-jpg/2.0.0/files/",
-                    label_path="/home/mlmi-kamilia/jingsong/StructuredReportGeneration/dataset/")
+                    label_path="/home/mlmi-kamilia/jingsong/StructuredReportGeneration/datasets/")

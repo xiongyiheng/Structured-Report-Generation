@@ -1,4 +1,3 @@
-import numpy as np
 from datetime import datetime
 
 import torch
@@ -8,11 +7,10 @@ from torch.utils.data import DataLoader
 
 from model.resnet import ResNet
 from model.resnet import BasicBlock
-from model.resnet import Bottleneck
 
 from model.loss_helper import get_loss
 
-from radgraph.radgraph import Radgraph
+from datasets.radgraph.radgraph import Radgraph
 
 BATCH_SIZE = 16
 MAX_EPOCH = 15
@@ -36,7 +34,7 @@ print(len(TRAIN_DATALOADER), len(TEST_DATALOADER))
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-net = ResNet(BasicBlock, [2, 2, 2, 2])  # resnet34: [3, 4, 6, 3], resnet18: [2, 2, 2, 2]
+net = ResNet(BasicBlock, [3, 4, 6, 3])  # resnet34: [3, 4, 6, 3], resnet18: [2, 2, 2, 2]
 net.to(device)
 
 criterion = get_loss
@@ -123,7 +121,10 @@ def evaluate_one_epoch():
     stat_dict['accuracy'] = (tp + tn) / (tp + tn + fp + fn)
     stat_dict['precision'] = tp / (tp + fp)
     stat_dict['recall'] = tp / (tp + fn)
-    stat_dict['f1-score'] = 2 * stat_dict['precision'] * stat_dict['recall'] / (
+    if (stat_dict['precision'] + stat_dict['recall']) == 0:
+        stat_dict['f1-score'] = 0.0
+    else:
+        stat_dict['f1-score'] = 2 * stat_dict['precision'] * stat_dict['recall'] / (
                 stat_dict['precision'] + stat_dict['recall'])
 
     writer.add_scalars('val', {key: stat_dict[key] for key in stat_dict},
