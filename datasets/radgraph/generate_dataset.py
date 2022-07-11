@@ -1,5 +1,5 @@
 ################################
-########## generate datasets for DL training
+########## generate dataset for DL training
 ########## output format in json file like:
 ##########  "report id":
 #                   {lung:  {
@@ -14,10 +14,12 @@
 #                    }
 
 import json
+import os
+from collections import Counter
 
 
 global count
-count = 0
+count=0
 OB_modified = False
 splite = "train"
 
@@ -34,7 +36,7 @@ def del_space(s):
     else:
         return s
 
-def write_json(data,file_path): #'D:/studium/MIML/radgraph/radgraph/train_add_sug.json'
+def write_json(data,file_path):#'D:/studium/MIML/radgraph/radgraph/train_add_sug.json'
     with open(file_path, 'w') as outfile:
         json.dump(data, outfile)
 
@@ -55,7 +57,7 @@ def gen_dict_for_each_report(organ,organ_modify,OBS_with_modify,OBS_label,dict_e
     #           }
     #masked_each_report in same format as dict_each_report, BUT "1" means it has such masks in the corressponding lables in this label,
 
-    if organ and organ_modify and OBS_with_modify:       #output the datasets only if the organ and organ_modify and observation in the mapping list
+    if organ and organ_modify and OBS_with_modify:       #output the dataset only if the organ and organ_modify and observation in the mapping list
         if organ in ref_dict.keys():
             if organ_modify in ref_dict[organ].keys():
                 ls = ref_dict[organ][organ_modify]
@@ -80,6 +82,18 @@ def gen_dict_for_each_report(organ,organ_modify,OBS_with_modify,OBS_label,dict_e
     return dict_each_report,masked_each_report
 
 def gen_dataset(dataset,id,dict_each_report,masked_each_report):
+    ##########  dataset ={"report id":
+        #                   {lung:  {
+        #                           lung:{ 'edema', 'no clear',...
+        #                                   }
+        #                           left:{'no edema', 'clear'
+        #                            }
+        #                     heart:{...
+        #                           }
+        #                     labels:[1,0,1,0,......]
+        #                     mask:[1,1,1,0,....]
+        #                    }
+        #                  "report id2":{...}
     labels_ls = []
     mask_ls = []
     ### flatten all attributes into one list
@@ -92,7 +106,7 @@ def gen_dataset(dataset,id,dict_each_report,masked_each_report):
         inner_dic = masked_each_report[key]
         for key1,ls1 in inner_dic.items():
             mask_ls.extend(ls1)
-    ### generate the final datasets
+    ### generate the final dataset
     dataset[id] = {'labels':labels_ls,
                     'mask':mask_ls}
 
@@ -177,7 +191,7 @@ def gen_init_dict_for_each_report(ref_dict,mask = False):
                     ls1[i]=0
                 else:
                     if ls1[i] == "clear" or ls1[i] == "normal":
-                        ls1[i] = 1
+                        ls1[i] = 0
                     else:
                         ls1[i]=0
     # if cant find the key
@@ -498,6 +512,7 @@ mapping_subpart = {
        "cavitary":["cavitary"],
        "interstitium":["interstitium"],
        "cage":["cage"],
+
         "right": ["right", "right - sided", "right sided",'the right - sided', "right side"],
         "left": ["left", "left - sided", "left-sided"],
         "contour": ["contour", "silhouette", "silhouettes", "contours"],
@@ -555,6 +570,33 @@ mapping_subpart = {
     "of t 5 through t 9":["of t 5 through t 9"]
 }
 
+
+# ref_dict = {'lung':{'lung':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'],
+#             'volume':['decrease'],
+#          'left':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'right':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'lower':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'mid':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'],  'upper':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'vascular':['normal', 'abnormal', 'congested'], 'base':['atelectasis', 'opacity']},
+#         'pleural':{'pleural':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'right':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'left':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'bilateral':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'surface':['normal', 'abnormal', 'clear', 'effusion']},
+#         'heart':{'heart':['normal', 'abnormal', 'opacity', 'atelectasis', 'consolidation'],
+#                  'size':['normal','abnormal','enlarged'], 'contour':['normal', 'abnormal', 'enlarged'],
+#                 'left':['normal', 'abnormal', 'opacity', 'atelectasis', 'consolidation']},
+#         'mediastinum':{'mediastinum':['normal', 'abnormal', 'enlarged', 'shift'],
+#                        'contour':['normal', 'abnormal', 'enlarged'],
+#                        'structure':['normal', 'abnormal']},
+#         'vascular':{'vascular':['congested', 'calcification', 'crowding']}
+# }
+# ref_dict1 = {'lung':{'lung':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'],
+#             'volume':['decrease'],
+#          'left':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'right':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'lower':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'mid':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'],  'upper':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'vascular':['normal', 'abnormal', 'congested'], 'base':['atelectasis', 'opacity']},
+#         'pleural':{'pleural':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'right':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'left':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'bilateral':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'surface':['normal', 'abnormal', 'clear', 'effusion']},
+#         'heart':{'heart':['normal', 'abnormal', 'opacity', 'atelectasis', 'consolidation'],
+#                  'size':['normal','abnormal','enlarged'], 'contour':['normal', 'abnormal', 'enlarged'],
+#                 'left':['normal', 'abnormal', 'opacity', 'atelectasis', 'consolidation']},
+#         'mediastinum':{'mediastinum':['normal', 'abnormal', 'enlarged', 'shift'],
+#                        'contour':['normal', 'abnormal', 'enlarged'],
+#                        'structure':['normal', 'abnormal']},
+#         'vascular':{'vascular':['congested', 'calcification', 'crowding']}
+# }
+
+
 # a_file = open("organ_loc_ob.json", "r")
 # ref_dict = a_file.read()
 # a_file.close()
@@ -573,6 +615,8 @@ dataset = {}
 final_dict={}
 if splite == "train":
     splite_open = "train_add_sug"
+else:
+    splite_open = splite
 
 with open('D:/studium/MIML/radgraph/radgraph/'+splite_open+'.json', 'r') as f:
     data = json.load(f)
@@ -721,7 +765,7 @@ for key in data.keys():  # key : "p18/p18004941/s58821758.txt"
 
 write_json(dataset, 'D:/studium/MIML/radgraph/radgraph/final_dataset_'+splite+'.json')
 print(count)
-#final_dict = update_dict(final_dict,output_dict)
+                    #final_dict = update_dict(final_dict,output_dict)
 
 
 # for key, ls in final_dict['mediastinum'].items():
