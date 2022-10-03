@@ -1,16 +1,16 @@
-
+"""
+This file is to generate the template based on training data with suffix `_train.json` or `_eval.json` and mapping `mapping_delete_meaningless.json`
+The final output file would in format {"hilar":{"hilar":{},"contours":{3cm cancer, opacaties}}}
+"""
 import json
 import os
 from collections import Counter
 
-####### output dictionary ######
-#in format: {"hilar":{"hilar":{},"contours":{3cm cancer, opacaties}}}
+
 
 ### global settings ###
 
 OB_modified = False
-
-
 
 def del_space(s):
     #input: string
@@ -89,385 +89,13 @@ def update_dict(final_dict,dic):
     return final_dict
 
 
-
-
-mapping_observation = {
-        "effusion":["effusions","effusion","infiltrate","infiltration"],
-        "enlarged":["distended","elongation","elongated", "dilated","enlarged","large","larger","expanded","well - expanded","hyperexpansion","enlargement","increased","increase","exaggerated","widening","widened","distention","distension","increased enlarged"],
-        "opacity":["hazinness","obscured","obscuration","opacity","opacities","opacified","opacifications","opacification","obscures","obscuring","indistinct","indistinctness","haziness","not less distinct","blurring"],
-        "thickening":["thickening","thickenings","hyperlucent"],
-        "drain":["drains","drain"],
-        "normal":["normal","stable","unremarkable","top - normal","unchanged","better","improved","improvement"],
-        "clear":["lucencies","clear","lucency"],
-        "decrease":["decreased","lower","low","decrease"],
-        "abnormal":["lesion","worsened","lesions","worse","abnormality","abnormalities","abnormal","deformity","disease","deformities","dysfunction"],
-        "edema":["edema"],
-        "malignancy":["malignancy","malignancies","cancer"],
-        "hemorrhage":["hemorrhage","hemorrahge","bleeding","blood"],
-        "congested":["congested","congestion","engorged"],
-        "infection":["infectious","infection"],
-        "sharp":["sharp","sharply"],
-        "prominent":["prominence","prominent"],
-        "consolidation": ["consolidation", "consolidations","consolidative"],
-        "nodules": ["nodules", "nodule","nodular"],
-        "pneumonic": ["pneumonic", "pneumonia"],
-        "calcification": ["calcification","calcified","calcifications"],
-        "tortuous": ["tortuous","tortuosity"],
-        "atelectasis": ["atelectasis","atelectatic","atelectases"],
-        "pneumothoraces": ["pneumothoraces","pneumothorace","pneumothorax","emphysema","aerated","pneumothoraces"],
-        "fracture":["fractures","fracture","fractured"],
-        "injury": ["injury", "injuries","trauma","traumas"],
-    "position":["position","positions"],
-    "visualized":["visualized"],
-    "parenchymal":["parenchymal"],
-"postoperative":["postoperative","post - operative"],
-    "nondistended":["nondistended"],
-    "confluent":["confluent"],
-    "overlying":["overlying"],
-    "catheter":["catheter","catheters"],
-    "crowding":["crowding","crowding of"],
-    "bilateral":["bilateral"],
-    "demineralized":["demineralized"],
-    "pic":["pic","picc"],
-    "adenopathy":["adenopathy"],
-    "kyphosis":["kyphosis"],
-    "aicd":["aicd"],
-"gallbladder":["gallbladder"],
-"thoracolumbar":["thoracolumbar"],
-"lymph node":["lymph node"],
-    "nipple":["nipple"],
-    "not well evaluated":["not well evaluated","not well assessed","not well seen","not seen","difficult to assess"],
-    "operation":["operation"],
-    "volume":["volume", "volumes"],
-    "wire":["wire","wires"],
-    "decompensation":["decompensation"],
-"collapse":["collapse"],
-    "defibrillator":["defibrillator"],
-    "obstruction":["obstruction"],
-    "granulomas":["granulomas"],
-    "compression":["compression"],
-    "object":["object"],
-    "hardware":["hardware"],
-    "port":["port","ports"],
-    "tip":["tip","tips"],
-    "atherosclerotic":["atherosclerotic"],
-    "inflammatory":["inflammatory"],
-    "loculated":["loculated"],
-    "cardiomyopathy":["cardiomyopathy"],
-    "fullness":["fullness"],
-    "density":["density","densities"],
-    "unfolded":["unfolded"],
-    "vessel on end":["vessel on end"],
-    "pacemaker":["pacemaker"],
-    "ileus":["ileus"],
-    "accentuation":["accentuation"],
-    "pneumopericardium":["pneumopericardium"],
-    "mucous":["mucous"],
-    "scoliosis":["scoliosis"],
-    "similar":["similar"],
-    "blunting":["blunting"],
-    "scarring":["scarring"],
-    "sidehole":["sidehole","the side - port","side port", "side holes", "side ports"],
-    "engorgement":["engorgement"],
-    "copd":["copd"],
-    "bubble":["bubble"],
-    "to":["to"],
-    "cephalization":["cephalization"],
-    "pressure":["pressure"],
-    "cardiogenic":["cardiogenic"],
-    "silhouetting":["silhouetting","silhouette"],
-    "replacement":["replacement","replacements"],
-    "sheath":["sheath"],
-    "sarcoidosis":["sarcoidosis"],
-    "area":["area","areas"],
-    "more":["more"],
-    "multiple":["multiple","several"],
-    "poor definition":["poor definition"],
-    "markings":["markings"],
-    "intact":["intact"],
-    "resection":["resection"],
-    "evidence of prior smoking":["evidence of prior smoking"],
-    "flattened":["flattened","flattening"],
-    "fibrotic":["fibrotic","fibrosis"],
-    "device":["device","devices","hardware"],
-    "free":["free"],
-    "hypertension":["hypertension"],
-    "moderate":["moderate","milder"],
-    "aeration":["aeration"],
-    "component":["component"],
-      "process":["process","processes"],
-      "tube":["tube","tubes"],
-      "clip":["clip","clips"],
-      "high":["high"],
-      "air bronchograms":["air bronchograms"],
-      "borderline":["borderline","border","borders"],
-      "one - third":["one - third"],
-      "overload":["overload"],
-      "surgery":["surgery"],
-      "vasculature":["vasculature"],
-      "change":["change","changes"],
-      "chf":["chf"],
-      "small":["small"],
-      "within":["within"],
-      "projection":["projection"],
-      "wedging":["wedging"],
-      "redistribution":["redistribution"],
-      "similar to prior":["similar to prior"],
-      "pronounced":["pronounced"],
-      "radiodensity":["radiodensity"],
-      "greater":["greater"],
-      "infiltrates":["infiltrates"],
-      "displacement":["displacement","displacements","shift","deviation"],
-      "reaction to inhaled substances":["reaction to inhaled substances"],
-      "thoracocentesis":["thoracocentesis"],
-      "extensive":["extensive"],
-      "obliterating":["obliterating"],
-      "distance":["distance"],
-      "degenerative":["degenerative"],
-      "failure":["failure"],
-      "migrated":["migrated"],
-      "fat":["fat"],
-      "pnemonia":["pnemonia"],
-      "appearance":["appearance"],
-      "wedge resection":["wedge resection"],
-      "underinflated":["underinflated"],
-      "thyroidectomy":["thyroidectomy"],
-      "bulging":["bulging","inflated"],
-      "air":["air","gas"],
-      "sequela":["sequela"],
-      "lead":["lead","leads"],
-      "size":["size"],
-      "findings":["findings"],
-      "structure":["structure","structures"],
-      "elevate":["elevate","elevation","elevated"],
-      "obliteration":["obliteration"],
-      "suture":["suture","sutures"],
-      "loculation":["loculation"],
-      "dahboff":["dahboff"],
-      "its":["its"],
-      "resorption":["resorption"],
-      "it":["it"],
-      "examination":["examination"],
-      "radiograph":["radiograph"],
-      "lymphadenopathy":["lymphadenopathy"],
-      "line":["line"],
-      "origin":["origin"],
-      "aspiration":["aspiration"],
-      "asymmetry":["asymmetry"],
-      "loss":["loss"],
-      "ij":["ij"],
-      "high - positioned":["high - positioned"],
-      "separation":["separation"],
-      "implement":["implement"],
-      "rod":["rod"],
-      "pacer":["pacer"],
-      "pneumomediastinum":["pneumomediastinum"]
-}
-
-
-mapping = {"lung":["lung","pulmonary","lungs","midlung","subpulmonic","pulmonic"],
-           "pleural":["pleural","plerual"],
-            "heart":["heart","cardiac","retrocardiac"],
-           "mediastinum":["mediastinal","cardiomediastinal","mediastinum"],
-           "lobe":["lobe","lobar","lobes"],
-            "hilar":["hilar","hila","hilus","suprahilar"],
-           "vascular":["vascular","coronary",'internal jugular',"intravascular","vasculature","bronchovascular","venous","aortic","vein","arteries","vasculatiry","aorta","artery","vessel","vessels", "vascularity", "superior vena cava", "jugular"],
-           "chest":["chest","thorax","pectus", "intrathoracic","hemithorax"],
-           "cardiopulmonary":["cardiopulmonary"],
-           "basilar":["bibasilar","basilar","base","bibasal","basal","bases"],
-           "diaphragm":["hemidiaphragm","diaphragm","hemidiaphragms","diaphragms"],
-           "rib":["rib","ribs", "ribcage", "costophrenic"],
-           "stomach":["stomach","gastric"],
-           "spine":["spine","vertebral","spinal","paraspinal","t 12 vertebral","thoracolumbar","carina"],
-           "esophagus":["esophagus"],
-           "apex":["apex","apical"],
-           "osseous":["osseous"],
-           "esophagogastric":["esophagogastric","gastroesophageal"],
-           "bony":["bony","bones","skeletal"],
-           "quadrant":["quadrant"],
-           "sternal":["sternal","thoracic"],
-           "svc":["svc"],
-           "subclavian":["subclavian","clavicle"],
-           "atrium":["atrium"],
-           "valve":["valve", "valvular"],
-           "pericardial":["pericardial","perihilar"],
-           "skin":["skin","cutaneous"],
-           "airway":["airway","airspace"],
-           "institial":["institial"],
-           "interstitial":["interstitial"],
-           "parenchymal":["parenchymal"],
-           "line":["line", "lines"],
-           "fissure":["fissure"],
-           "junction":["junction"],
-           "lingular":["lingular","lingula"],
-           "infrahilar":["infrahilar"],
-           "biapical":["biapical"],
-           "neck":["neck"],
-           "apical":["apical"],
-           "paratracheal":["paratracheal", "trachea","peribronchial","bronchial"],
-           "thyroid":["thyroid"],
-           "ge":["ge"],
-           "axillary":["axillary","axilla"],
-           "ventricle":["ventricle","ventricular","cavoatrial","biventricular","cavoatrial junction"],
-           "left arm":["left arm"],
-           "scapula":["scapula"],
-           "subcutaneous":["subcutaneous", "subcutaneus"],
-           "soft tissues":["soft tissues", "soft tissue"],
-           "ij":["ij"],
-           "sheath":["sheath"],
-           "alveolar":["alveolar"],
-           "pylorus":["pylorus"],
-           "subsegmental":["subsegmental"],
-           "lumbar":["lumbar"],
-           "abdomen":["abdomen"],
-           "duodenum":["duodenum"],
-           "fundus":["fundus"],
-           "inlet":["inlet"],
-           "subdiaphragmatic":["subdiaphragmatic"],
-           "cervical":["cervical"],
-           "zone":["zone"],
-           "volume":["volume", "volumes"],
-           "tube":["tube","tubes"],
-           "bowel":["bowel"],
-           "annulus":["annulus"],
-           "cavitary":["cavitary"],
-           "interstitium":["interstitium"],
-           "cage":["cage"]
-            }
-
-mapping_subpart = {
-        "lung":["lung","pulmonary","lungs","midlung","subpulmonic","pulmonic"],
-       "pleural":["pleural","plerual"],
-        "heart":["heart","cardiac","retrocardiac"],
-       "mediastinum":["mediastinal","cardiomediastinal","mediastinum"],
-       "lobe":["lobe","lobar","lobes"],
-        "hilar":["hilar","hila","hilus","perihilar","suprahilar"],
-       "vascular":["vascular","coronary",'internal jugular',"intravascular","vasculature","bronchovascular","venous","aortic","vein","arteries","vasculatiry","aorta","artery","vessel","vessels", "vascularity", "superior vena cava", "jugular"],
-       "chest":["chest","thorax","pectus", "intrathoracic","hemithorax"],
-       "cardiopulmonary":["cardiopulmonary"],
-       "basilar":["bibasilar","basilar","base","bibasal","basal","bases"],
-       "diaphragm":["hemidiaphragm","diaphragm","hemidiaphragms","diaphragms"],
-       "rib":["rib","ribs", "ribcage", "costophrenic"],
-       "stomach":["stomach","gastric"],
-       "spine":["spine","vertebral","spinal","paraspinal","t 12 vertebral","thoracolumbar","thoracolumbar junction","carina"],
-       "esophagus":["esophagus"],
-       "apex":["apex","apical"],
-       "osseous":["osseous"],
-       "esophagogastric":["esophagogastric","gastroesophageal"],
-       "bony":["bony","bones","skeletal"],
-       "quadrant":["quadrant"],
-       "sternal":["sternal","thoracic"],
-       "svc":["svc"],
-       "subclavian":["subclavian","clavicle"],
-       "atrium":["atrium"],
-       "valve":["valve", "valvular"],
-       "pericardial":["pericardial"],
-       "skin":["skin","cutaneous"],
-       "airway":["airway","airspace"],
-       "institial":["institial"],
-       "interstitial":["interstitial"],
-       "parenchymal":["parenchymal"],
-       "line":["line", "lines"],
-       "fissure":["fissure"],
-       "junction":["junction", "ge junction"],
-       "lingular":["lingular","lingula"],
-       "infrahilar":["infrahilar"],
-       "biapical":["biapical"],
-       "neck":["neck"],
-       "apical":["apical"],
-       "paratracheal":["paratracheal", "trachea","peribronchial","bronchial"],
-       "thyroid":["thyroid"],
-       "ge":["ge"],
-       "axillary":["axillary","axilla"],
-       "ventricle":["ventricle","ventricular","cavoatrial","biventricular","cavoatrial junction"],
-       "left arm":["left arm"],
-       "scapula":["scapula"],
-       "subcutaneous":["subcutaneous", "subcutaneus"],
-       "soft tissues":["soft tissues", "soft tissue"],
-       "ij":["ij"],
-       "sheath":["sheath"],
-       "alveolar":["alveolar"],
-       "pylorus":["pylorus"],
-       "subsegmental":["subsegmental"],
-       "lumbar":["lumbar"],
-       "abdomen":["abdomen"],
-       "duodenum":["duodenum"],
-       "fundus":["fundus"],
-       "inlet":["inlet"],
-       "subdiaphragmatic":["subdiaphragmatic"],
-       "cervical":["cervical"],
-       "zone":["zone", "area", "areas", "region"],
-       "volume":["volume","volumes"],
-       "tube":["tube","tubes"],
-       "bowel":["bowel"],
-       "annulus":["annulus"],
-       "cavitary":["cavitary"],
-       "interstitium":["interstitium"],
-       "cage":["cage"],
-
-        "right": ["right", "right - sided", "right sided",'the right - sided', "right side"],
-        "left": ["left", "left - sided", "left-sided"],
-        "contour": ["contour", "silhouette", "silhouettes", "contours"],
-        "structure": ["structure", "structures"],
-        "surface": ["surface", "surfaces"],
-        "bilateral": ["bilateral", "bilaterally"],
-        "lower":["lower","low", "descending", "below","beneath"],
-        "mid":["mid","central","median","middle","midline"],
-        "upper":["upper","superiorly", "above","3.6 cm above","2.9 cm above","1.8 cm above","5 cm above","6 cm above","2.8 cm above","4.6 cm above","4.7 cm above"],
-        "major":["major"],
-        "small":["small"],
-        "great":["great"],
-    "content":["content", "contents"],
-    "angle":["angle"],
-    "related":["related"],
-    'azygos':['azygos'],
-    "medially":["medially","internal","interspace", "within","medial","in"],
-    "tip":["tip"],
-    "cp":["cp"],
-    "anterior":["anterior"],
-    "body":["body","bodies"],
-    "unchanged":["unchanged"],
-    "configuration":["configuration"],
-    "fourth":["fourth"],
-    "pedicle":["pedicle"],
-    "arch":["arch"],
-    "mitral":["mitral"],
-    "grossly":["grossly"],
-    "adjacent":["adjacent"],
-    "lateral":["lateral",'laterally'],
-    "excavatum":["excavatum"],
-    "compartment":["compartment"],
-    "edema":["edema"],
-    "remainder":["remainder"],
-    "third":["third"],
-    "nondistended":["nondistended"],
-    "wall":["wall"],
-    "border":["border","margin","periphery"],
-    "nipple":["nipple"],
-    "sinus":["sinus","sinuses"],
-    "minor":["minor"],
-    "size":["size"],
-    "part":["part", "parts", "portion", "position","field"],
-    "proximally":["proximally","proximal"],
-    "diameter":["diameter"],
-    "distal":["distal"],
-    "first":["first"],
-    "ac":["ac"],
-    'multiple':['multiple'],
-    "posterior":["posterior"],
-"brachiocephalic":["brachiocephalic"],
-    "mid - to - distal":["mid - to - distal"],
-"cardia":["cardia"],
-    "tricuspid":["tricuspid"],
-    "of t 5 through t 9":["of t 5 through t 9"]
-}
-
-
-
+with open('D:/studium/MIML/radgraph/radgraph/smart_reporting/mapping_new_template.json', 'r') as f:
+    mapping_dict = json.load(f)
+mapping_subpart = mapping_dict["mapping_subpart"]
+mapping_observation = mapping_dict["mapping_observation"]
+mapping = mapping_dict["mapping_organs"]
 
 final_dict={}
-
-
 
 with open('D:/studium/MIML/radgraph/radgraph/train_add_sug.json', 'r') as f:
     data = json.load(f)
@@ -569,7 +197,6 @@ for key in data.keys():  # key : "p18/p18004941/s58821758.txt"
                                             OBS_with_modify = obs_modified  # cancer
                                         else:
                                             OBS_with_modify = entity_4["tokens"].lower() + " " + obs_modified  # 3cm cancer
-                                        #OBS_with_modify = obs_modified  # 3cm cancer
 
                                         organ_after_mapping = mapping_name(mapping, organ_lower_token)
                                         if organ_after_mapping == None:
@@ -590,12 +217,15 @@ for key in data.keys():  # key : "p18/p18004941/s58821758.txt"
                             organ_modify = organ_after_mapping  # lung
                             organ = organ_after_mapping  # lung
 
-                        organ_modify_copy = organ_modify
-                        organ_modify = mapping_name(mapping_subpart, organ_modify_copy)
-                        if organ_modify == None:
-                            organ_modify = organ_modify_copy
-                        # if OBS_with_modify:
-                        #     OBS_with_modify = del_space(OBS_with_modify)
+                    organ_modify_copy = organ_modify
+                    organ_modify = mapping_name(mapping_subpart, organ_modify_copy)
+                    # if organ_modify == None:
+                    #     organ_modify = organ_modify_copy
+                    # if OBS_with_modify:
+                    #     OBS_with_modify = del_space(OBS_with_modify)
+                    OBS_label = entity['label'][-2:]
+                    OBS_with_modify = mapping_name(mapping_observation, OBS_with_modify)
+                    organ = mapping_name(mapping, organ)
 
 
                         #organ_modify = organ_lower_token
@@ -603,36 +233,32 @@ for key in data.keys():  # key : "p18/p18004941/s58821758.txt"
                         #{organ_after_mapping:[]}
                     # if OBS_with_modify == 'limits':
                     #     print(key)
-                    output_dict = {organ: {organ_modify.lower(): [OBS_with_modify]}}
-                    final_dict = update_dict(final_dict,output_dict)
+                    if organ_modify and OBS_with_modify and organ:
+                        output_dict = {organ: {organ_modify.lower(): [OBS_with_modify]}}
+                        final_dict = update_dict(final_dict,output_dict)
 
-# for key, ls in final_dict['alveolar'].items():
-#     #key:'left'         ls:['large','larged']
-#     #mapping
-#     for i in range(len(ls)):
-#         af_mapping = mapping_name(mapping_observation,ls[i])
-#         if af_mapping == None:
-#             af_mapping = ls[i]
-#         ls[i] = af_mapping
-#     #distinct
-#     result = Counter(ls)
-#     sorted_result = sorted(result.items(), key=lambda x: x[1], reverse=True)
-#
-#     print({key:sorted_result})
-    #print('/n')
 
-rem_ls = ['clear',"normal",'abnormal']
+### to remove some neutral properties
+rem_ls = []#['clear',"normal",'abnormal']
 
 for key_organ in final_dict.keys():
     for key, ls in final_dict[key_organ].items():
+        ls_filterd = []
         #key:'left'         ls:['large','larged']
         #mapping
-        for i in range(len(ls)):
-            af_mapping = mapping_name(mapping_observation,ls[i])
-            if af_mapping == None:
-                af_mapping = ls[i]
-            ls[i] = af_mapping
+        # for i in range(len(ls)):
+        #     af_mapping = mapping_name(mapping_observation,ls[i])
+        #     if af_mapping == None:
+        #         af_mapping = ls[i]
+        #     ls[i] = af_mapping
         ### remove all general OB in label
+
+        ### Count the nr of dis ###
+        result = Counter(ls)
+        for dis,nr in result.items():
+            if nr >= 1:
+                ls_filterd.append(dis)
+        ls = ls_filterd
 
         ls = list(set(ls))
         for e in ls:
@@ -652,11 +278,27 @@ for key_organ in final_dict.keys():
 
         final_dict[key_organ][key] = ls
 
-a_file = open("organ_loc_ob.json", "w")
+
+### remove all empty keys for organs and locs ###
+# firstly remove all the keys for empty locs
+for organ, inner_dict in final_dict.items():
+    for loc, dis_ls in inner_dict.copy().items():
+        if len(dis_ls) == 0:
+            del inner_dict[loc]
+
+# then remove all the keys for empty organs
+for organ, inner_dict in final_dict.copy().items():
+    if len(inner_dict) == 0:
+        del final_dict[organ]
+    # for loc, dis_ls in inner_dict.items():
+    #     if len(dis_ls) == 0:
+    #         del inner_dict[loc]
+
+
+#output file
+a_file = open("D:/studium/MIML/radgraph/radgraph/smart_reporting/organ_loc_ob_smart_reporting.json", "w")
 json.dump(final_dict, a_file)
 a_file.close()
-
-
 
 
 #print(final_dict.keys())
