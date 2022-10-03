@@ -5,7 +5,7 @@ Investigating several neural models that as input will have the imaging data and
 present structured report.
 
 ## Tutorial
-# How to anlayse the fre of each cls?
+### How to anlayse the fre of each cls?
 The only three relevant files are smart_reporting/num_words_mapping_origin.json, dataset_analyse_whole.py and detr_SmartReporting_train.json.
 
 Edit the parameter in file dataset_analyse_whole.py in line 11 to the number of classes you want to print out. 
