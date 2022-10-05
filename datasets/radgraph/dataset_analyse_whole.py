@@ -6,9 +6,9 @@ where the whole triple is treated as one class.
 import json
 import numpy as np
 import matplotlib.pyplot as plt
-None_obj = [16,12,19]
+None_obj = [25,18,24]
 ls=[]
-N = 5 # N largest values
+N = 15 # N largest values
 
 
 with open("D:/studium/MIML/radgraph/radgraph/smart_reporting/detr_SmartReporting_train.json", 'r') as f:
@@ -24,7 +24,7 @@ for key,ls_ls in ref_dict.items():
 ls = np.asarray(ls)
 unique, counts = np.unique(ls, return_counts=True,axis=0)
 fre = counts/ls.shape[0]
-
+#print(counts.shape)
 # select the N largest values from the array
 ind = np.argpartition(fre, -1*N)[-1*N:]  #return the index
 selected_triple = unique[ind]
@@ -33,10 +33,11 @@ selected_triple = unique[ind]
 with open("D:/studium/MIML/radgraph/radgraph/smart_reporting/num_words_mapping_original.json", 'r') as f:
     map_dict = json.load(f)
 #print(map_dict['dis_ls'][2])
-
 for i in range(len(selected_triple)):
     triple = selected_triple[i]
+    #print(triple)
     #print(triple[0])
+    #print(ind[i])
     print("["+map_dict['dis_ls'][triple[0]]+" "+map_dict['organ_ls'][triple[1]]+" "+map_dict['loc_ls'][triple[2]]+"] : "+str(counts[ind[i]]))
 
 
