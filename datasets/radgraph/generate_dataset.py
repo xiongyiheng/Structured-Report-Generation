@@ -1,18 +1,18 @@
-################################
-########## generate dataset for DL training
-########## output format in json file like:
-##########  "report id":
-#                   {lung:  {
-#                           lung:{ 'edema', 'no clear',...
-#                                   }
-#                           left:{'no edema', 'clear'
-#                            }
-#                     heart:{...
-#                           }
-#                     labels:[1,0,1,0,......]
-#
-#                    }
+"""
+Generate dataset for DL training for baseline
+output format in json file like:
+"report id":
+                   {lung:  {
+                           lung:{ 'edema', 'no clear',...
+                                   }
+                           left:{'no edema', 'clear'
+                            }
+                     heart:{...
+                           }
+                     labels:[1,0,1,0,......]
 
+                    }
+"""
 import json
 import os
 from collections import Counter
@@ -26,9 +26,10 @@ splite = "train"
 
 
 def del_space(s):
-    #input: string
-    #output: children-string after the space
-
+    """
+    input: string
+    output: children-string after the space
+    """
     if " " in s:
         output = s.split()[-1]
 
@@ -41,21 +42,21 @@ def write_json(data,file_path):#'D:/studium/MIML/radgraph/radgraph/train_add_sug
         json.dump(data, outfile)
 
 def gen_dict_for_each_report(organ,organ_modify,OBS_with_modify,OBS_label,dict_each_report,masked_each_report,ref_dict):
-    #todo: if normal -> other attributes in this sub part are all 0 and masked = 1?
+    """
+    dic = {"organ":{"organ_modify":[3cm cancer]}}
+    output = {organ:{organ_modify:[clear, 3cm cancer]}}
+    dict_each_report = {
+                      lung:  {
+                              lung:[0,1,0,1...]
+                              left:[1,1,0,]
+                       heart:{...}
+
+                       }
+              }
+    masked_each_report in same format as dict_each_report, BUT "1" means it has such masks in the corressponding lables in this label
+    """
 
     global count
-    # dic = {"organ":{"organ_modify":[3cm cancer]}}
-    # output = {organ:{organ_modify:[clear, 3cm cancer]}}
-    # dict_each_report = {
-    #                   lung:  {
-    #                           lung:[0,1,0,1...]
-    #                           left:[1,1,0,]
-    #                     heart:{...
-    #                           }
-    #
-    #                    }
-    #           }
-    #masked_each_report in same format as dict_each_report, BUT "1" means it has such masks in the corressponding lables in this label,
 
     if organ and organ_modify and OBS_with_modify:       #output the dataset only if the organ and organ_modify and observation in the mapping list
         if organ in ref_dict.keys():
@@ -82,18 +83,21 @@ def gen_dict_for_each_report(organ,organ_modify,OBS_with_modify,OBS_label,dict_e
     return dict_each_report,masked_each_report
 
 def gen_dataset(dataset,id,dict_each_report,masked_each_report):
-    ##########  dataset ={"report id":
-        #                   {lung:  {
-        #                           lung:{ 'edema', 'no clear',...
-        #                                   }
-        #                           left:{'no edema', 'clear'
-        #                            }
-        #                     heart:{...
-        #                           }
-        #                     labels:[1,0,1,0,......]
-        #                     mask:[1,1,1,0,....]
-        #                    }
-        #                  "report id2":{...}
+    """
+    The output dataset would be like:
+        dataset ={"report id":
+                           {lung:  {
+                                   lung:{ 'edema', 'no clear',...
+                                           }
+                                   left:{'no edema', 'clear'
+                                   }
+                             heart:{...
+                                  }
+                             labels:[1,0,1,0,......]
+                             mask:[1,1,1,0,....]
+                            }
+                "report id2":{...}
+    """
     labels_ls = []
     mask_ls = []
     ### flatten all attributes into one list
@@ -114,9 +118,13 @@ def gen_dataset(dataset,id,dict_each_report,masked_each_report):
 
 
 def update_dict(final_dict, dic):
-    # final_dict = {}
-    # dic = {"organ":{"organ_modify":[3cm cancer]}}
-    # output = {organ:{organ_modify:[clear, 3cm cancer]}}
+    """
+        Update the values of each final_dict with the value in dic
+        
+        final_dict = {}
+        dic = {"organ":{"organ_modify":[3cm cancer]}}
+        output = {organ:{organ_modify:[clear, 3cm cancer]}}
+    """
     for key, ls in dic.items():
         if key not in final_dict.keys():
             final_dict.update(dic)
@@ -133,20 +141,22 @@ def update_dict(final_dict, dic):
     return final_dict
 
 
-# p = os.getcwd().
+
 def mapping_name(dict,value):
     for key,ls in dict.items():
         if value in ls:
             return key
-    # if cant find the key
     return None
 
 def filter_out_observations(input_dict):
-    # input: dict= {"lung":[[],[]],
-    #          "...":...}
-    #
-    # output: dict={"lung":["clear","normal"],
-    #               "...": []}
+    """
+        input: dict= {"lung":[[],[]],
+             "...":...}
+
+        output: dict={"lung":["clear","normal"],
+                  "...": []}
+    """
+
     out_dict = dict.fromkeys(input_dict, [])
     for key,ls in input_dict.items():
         obser_ls = []  # value for output like ["clear","normal"]
@@ -159,6 +169,9 @@ def filter_out_observations(input_dict):
     return out_dict
 
 def create_dict_from_dict(dic):
+    """
+        create dict from another dict with same keys
+    """
     outdic = dic.copy()
     for key,ls in dic.items():
         outdic[key] = []
@@ -166,9 +179,12 @@ def create_dict_from_dict(dic):
     return outdic
 
 def mapping_observations(mapping_observation,dic):
-    #output:
-    #   dict{"lung":[normal,effusion],
-    #              "...":[...]}
+    """
+    mapping each OB into the mapped OB according to dict
+    :param mapping_observation: an OB
+    :param dic: the mapping dict
+    :return: the mapped OB
+    """
     out_dict = create_dict_from_dict(dic)
 
     for key, ls in dic.items():  #ls = ["effusions","effusion"]
@@ -180,7 +196,9 @@ def mapping_observations(mapping_observation,dic):
     return out_dict
 
 def gen_init_dict_for_each_report(ref_dict,mask = False):
-    ###generate the initial version of dict for each report
+    """
+    generate the initial version of dict for each report
+    """
 
     output = ref_dict.copy()
     for key,ls in output.items():
@@ -571,40 +589,6 @@ mapping_subpart = {
 }
 
 
-# ref_dict = {'lung':{'lung':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'],
-#             'volume':['decrease'],
-#          'left':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'right':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'lower':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'mid':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'],  'upper':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'vascular':['normal', 'abnormal', 'congested'], 'base':['atelectasis', 'opacity']},
-#         'pleural':{'pleural':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'right':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'left':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'bilateral':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'surface':['normal', 'abnormal', 'clear', 'effusion']},
-#         'heart':{'heart':['normal', 'abnormal', 'opacity', 'atelectasis', 'consolidation'],
-#                  'size':['normal','abnormal','enlarged'], 'contour':['normal', 'abnormal', 'enlarged'],
-#                 'left':['normal', 'abnormal', 'opacity', 'atelectasis', 'consolidation']},
-#         'mediastinum':{'mediastinum':['normal', 'abnormal', 'enlarged', 'shift'],
-#                        'contour':['normal', 'abnormal', 'enlarged'],
-#                        'structure':['normal', 'abnormal']},
-#         'vascular':{'vascular':['congested', 'calcification', 'crowding']}
-# }
-# ref_dict1 = {'lung':{'lung':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'],
-#             'volume':['decrease'],
-#          'left':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'right':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'lower':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'mid':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'],  'upper':['edema', 'clear', 'consolidation', 'enlarged', 'normal', 'abnormal', 'opacity', 'effusion', 'nodule', 'pneumonic', 'atelectasis'], 'vascular':['normal', 'abnormal', 'congested'], 'base':['atelectasis', 'opacity']},
-#         'pleural':{'pleural':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'right':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'left':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'bilateral':['normal', 'abnormal', 'effusion', 'thickening', 'drain'], 'surface':['normal', 'abnormal', 'clear', 'effusion']},
-#         'heart':{'heart':['normal', 'abnormal', 'opacity', 'atelectasis', 'consolidation'],
-#                  'size':['normal','abnormal','enlarged'], 'contour':['normal', 'abnormal', 'enlarged'],
-#                 'left':['normal', 'abnormal', 'opacity', 'atelectasis', 'consolidation']},
-#         'mediastinum':{'mediastinum':['normal', 'abnormal', 'enlarged', 'shift'],
-#                        'contour':['normal', 'abnormal', 'enlarged'],
-#                        'structure':['normal', 'abnormal']},
-#         'vascular':{'vascular':['congested', 'calcification', 'crowding']}
-# }
-
-
-# a_file = open("organ_loc_ob.json", "r")
-# ref_dict = a_file.read()
-# a_file.close()
-#
-# a_file = open("organ_loc_ob.json", "r")
-# ref_dict1 = a_file.read()
-# a_file.close()
-
 with open("organ_loc_ob.json", 'r') as f:
     ref_dict = json.load(f)
 with open("organ_loc_ob.json", 'r') as f:
@@ -625,10 +609,10 @@ organs = []
 observation_dict = create_dict_from_dict(mapping)
 
 #print(observation_dict)
+"""
+    The main function to extract the observations
+"""
 
-##########################################
-########## extract the observations ######
-##########################################
 for key in data.keys():  # key : "p18/p18004941/s58821758.txt"
     new_dict = data[key]
     entities = new_dict['entities']

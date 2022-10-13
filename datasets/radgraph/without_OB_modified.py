@@ -13,8 +13,10 @@ from collections import Counter
 OB_modified = False
 
 def del_space(s):
-    #input: string
-    #output: children-string after the space
+    """
+    input: string
+    output: children-string after the space
+    """
 
     if " " in s:
         output = s.split()[-1]
@@ -25,28 +27,36 @@ def del_space(s):
 
 # p = os.getcwd().
 def mapping_name(dict,value):
+    """
+    mapping each OB into the mapped OB according to dict
+    :param mapping_observation: an OB
+    :param dic: the mapping dict
+    :return: the mapped OB
+    """
     for key,ls in dict.items():
         if value in ls:
             return key
     # if cant find the key
     return None
 
-def filter_out_observations(input_dict):
-    # input: dict= {"lung":[[],[]],
-    #          "...":...}
-    #
-    # output: dict={"lung":["clear","normal"],
-    #               "...": []}
-    out_dict = dict.fromkeys(input_dict, [])
-    for key,ls in input_dict.items():
-        obser_ls = []  # value for output like ["clear","normal"]
-        for l in ls:
-            obser_ls.append(l[0])
-        # distinct output
-        #obser_ls = list(set(obser_ls))
-        out_dict[key] = obser_ls
+# def filter_out_observations(input_dict):
+#     """
+#     input: dict= {"lung":[[],[]],
+#              "...":...}
+    
+#     output: dict={"lung":["clear","normal"],
+#                   "...": []}
+#     """
+#     out_dict = dict.fromkeys(input_dict, [])
+#     for key,ls in input_dict.items():
+#         obser_ls = []  # value for output like ["clear","normal"]
+#         for l in ls:
+#             obser_ls.append(l[0])
+#         # distinct output
+#         #obser_ls = list(set(obser_ls))
+#         out_dict[key] = obser_ls
 
-    return out_dict
+#     return out_dict
 
 def create_dict_from_dict(dic):
     outdic = dic.copy()
@@ -56,10 +66,12 @@ def create_dict_from_dict(dic):
     return outdic
 
 def mapping_observations(mapping_observation,dic):
-    #output:
-    #   dict{"lung":[normal,effusion],
-    #              "...":[...]}
+    """
+    output:
+      dict{"lung":[normal,effusion],
+                 "...":[...]}
     out_dict = create_dict_from_dict(dic)
+    """
 
     for key, ls in dic.items():  #ls = ["effusions","effusion"]
         for l in ls:
@@ -70,9 +82,11 @@ def mapping_observations(mapping_observation,dic):
     return out_dict
 
 def update_dict(final_dict,dic):
-    #final_dict = {}
-    #dic = {"organ":{"organ_modify":[3cm cancer]}}
-    #output = {organ:{organ_modify:[clear, 3cm cancer]}}
+    """
+    Update final_dict's values with new dic
+    dic = {"organ":{"organ_modify":[3cm cancer]}}
+    output = {organ:{organ_modify:[clear, 3cm cancer]}}
+    """
     for key, ls in dic.items():
         if key not in final_dict.keys():
             final_dict.update(dic)
@@ -89,7 +103,7 @@ def update_dict(final_dict,dic):
     return final_dict
 
 
-with open('D:/studium/MIML/radgraph/radgraph/smart_reporting/mapping_new_template.json', 'r') as f:
+with open('D:/studium/mlmi-structured-report-generation/datasets/radgraph/mapping_delete_meaningless.json', 'r') as f:
     mapping_dict = json.load(f)
 mapping_subpart = mapping_dict["mapping_subpart"]
 mapping_observation = mapping_dict["mapping_observation"]
@@ -97,7 +111,7 @@ mapping = mapping_dict["mapping_organs"]
 
 final_dict={}
 
-with open('D:/studium/MIML/radgraph/radgraph/train_add_sug.json', 'r') as f:
+with open('/radgraph/radgraph/extend+train_add_sug.json', 'r') as f:
     data = json.load(f)
 
 organs = []
@@ -256,7 +270,7 @@ for key_organ in final_dict.keys():
         ### Count the nr of dis ###
         result = Counter(ls)
         for dis,nr in result.items():
-            if nr >= 1:
+            if nr >= 20:
                 ls_filterd.append(dis)
         ls = ls_filterd
 
@@ -296,7 +310,7 @@ for organ, inner_dict in final_dict.copy().items():
 
 
 #output file
-a_file = open("D:/studium/MIML/radgraph/radgraph/smart_reporting/organ_loc_ob_smart_reporting.json", "w")
+a_file = open("organ_loc_ob_extend_20.json", "w")
 json.dump(final_dict, a_file)
 a_file.close()
 

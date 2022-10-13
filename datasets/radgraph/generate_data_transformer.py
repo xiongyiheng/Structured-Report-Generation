@@ -1,17 +1,18 @@
-################################
-########## generate dataset for DL training
-########## output format in json file like:
-##########  "report id":
-#                   {lung:  {
-#                           lung:{ 'edema', 'no clear',...
-#                                   }
-#                           left:{'no edema', 'clear'
-#                            }
-#                     heart:{...
-#                           }
-#                     labels:[1,0,1,0,......]
-#
-#                    }
+"""
+generate dataset(label) for transformer training
+output format in json file like:
+"report id":
+                {lung:  {
+                        lung:{ 'edema', 'no clear',...
+                               }
+                        left:{'no edema', 'clear'
+                        }
+                heart:{...
+                           }
+                labels:[1,0,1], [2,3,4]....
+
+                }
+"""
 
 import json
 import os
@@ -25,15 +26,16 @@ max_nr=0
 count=0
 OB_modified = False
 splite = "dev"
-N = 15
+N = 30
 
 
 
 
 def del_space(s):
-    #input: string
-    #output: children-string after the space
-
+    """
+    input: string
+    output: children-string after the space
+    """
     if " " in s:
         output = s.split()[-1]
 
@@ -46,8 +48,9 @@ def write_json(data,file_path):#'D:/studium/MIML/radgraph/radgraph/train_add_sug
         json.dump(data, outfile)
 
 def gen_token_for_each_obs(organ,loc,OBS_with_modify,obs_ls,organ_ls,loc_ls,cls_ls):
-    #todo: if normal -> other attributes in this sub part are all 0 and masked = 1?
-
+    """
+    if normal -> other attributes in this sub part are all 0 and masked = 1 (not sure whether to use or not)
+    """
     if OBS_with_modify in obs_ls:
         ind_OBS = obs_ls.index(OBS_with_modify)
     else:
@@ -65,27 +68,26 @@ def gen_token_for_each_obs(organ,loc,OBS_with_modify,obs_ls,organ_ls,loc_ls,cls_
     else:
         return None
 
-### g
-    ##########  dataset ={"report id":
-        #                              [
-                            #             [1,2,3]
-                            #             [1,5,9]
-                            #             ...
-                            #             [0,0,0]
 
-        #                               ]
-        #
-        #
-        #                  "report id2":{...}
 def gen_dataset(dataset,id,token_ls_each_report,dis_ls,organ_ls,loc_ls):
+    """
+    generate dataset (label) like:
+    {"report id":
+    [
+        [1,2,3]
+        [1,5,9]
+        ...
+        [0,0,0]
+
+    ]
+        
+    {"report id2":][...]}
+    """
     global max_nr
     global N
 
-    none_obs = [len(dis_ls),len(organ_ls),len(loc_ls)]  #placeholder
+    none_obs = [len(dis_ls),len(organ_ls),len(loc_ls)]  # placeholder
     #print(none_obs)
-
-
-    ### generate the final dataset
 
     # count the max_nr of observations in a img
     if len(token_ls_each_report)> N:#skip the reports containing > 30 diseases
@@ -98,8 +100,6 @@ def gen_dataset(dataset,id,token_ls_each_report,dis_ls,organ_ls,loc_ls):
 
     # add placeholders for none objects
     nr_none = N - len(token_ls_each_report)
-
-
 
     for i in range(nr_none): #nr_none=10
         token_ls_each_report.append(none_obs)
@@ -118,9 +118,12 @@ def gen_dataset(dataset,id,token_ls_each_report,dis_ls,organ_ls,loc_ls):
 
 
 def update_dict(final_dict, dic):
-    # final_dict = {}
-    # dic = {"organ":{"organ_modify":[3cm cancer]}}
-    # output = {organ:{organ_modify:[clear, 3cm cancer]}}
+    """
+    update final_dict values with values in dic
+
+    dic = {"organ":{"organ_modify":[3cm cancer]}}
+    output = {organ:{organ_modify:[clear, 3cm cancer]}}
+    """
     for key, ls in dic.items():
         if key not in final_dict.keys():
             final_dict.update(dic)
@@ -139,30 +142,41 @@ def update_dict(final_dict, dic):
 
 # p = os.getcwd().
 def mapping_name(dict,value):
+    """
+    mapping each OB into the mapped OB according to dict
+    :param mapping_observation: an OB
+    :param dic: the mapping dict
+    :return: the mapped OB
+    """
     for key,ls in dict.items():
         if value in ls:
             return key
     # if cant find the key
     return None
 
-def filter_out_observations(input_dict):
-    # input: dict= {"lung":[[],[]],
-    #          "...":...}
-    #
-    # output: dict={"lung":["clear","normal"],
-    #               "...": []}
-    out_dict = dict.fromkeys(input_dict, [])
-    for key,ls in input_dict.items():
-        obser_ls = []  # value for output like ["clear","normal"]
-        for l in ls:
-            obser_ls.append(l[0])
-        # distinct output
-        #obser_ls = list(set(obser_ls))
-        out_dict[key] = obser_ls
+# def filter_out_observations(input_dict):
+#     """
+#     input: dict= {"lung":[[],[]],
+#               "...":...}
+    
+#     output: dict={"lung":["clear","normal"],
+#                    "...": []}
+#     """
+#     out_dict = dict.fromkeys(input_dict, [])
+#     for key,ls in input_dict.items():
+#         obser_ls = []  # value for output like ["clear","normal"]
+#         for l in ls:
+#             obser_ls.append(l[0])
+#         # distinct output
+#         #obser_ls = list(set(obser_ls))
+#         out_dict[key] = obser_ls
 
-    return out_dict
+#     return out_dict
 
 def create_dict_from_dict(dic):
+    """
+    Create dict from a dict with same values
+    """
     outdic = dic.copy()
     for key,ls in dic.items():
         outdic[key] = []
@@ -184,7 +198,9 @@ def create_dict_from_dict(dic):
 #     return out_dict
 
 def gen_init_dict_for_each_report(ref_dict,mask = False):
-    ###generate the initial version of dict for each report
+    """
+    generate the initial version of dict for each report
+    """
 
     output = ref_dict.copy()
     for key,ls in output.items():
@@ -230,7 +246,7 @@ if splite == 'extend':
 
 
 
-with open('D:/studium/MIML/radgraph/radgraph/smart_reporting/mapping_new_template.json', 'r') as f:
+with open('D:/studium/mlmi-structured-report-generation/datasets/radgraph/mapping_delete_meaningless.json', 'r') as f:
     mapping_dict = json.load(f)
 mapping_subpart = mapping_dict["mapping_subpart"]
 mapping_observation = mapping_dict["mapping_observation"]
@@ -288,7 +304,7 @@ def gen_lists():
 # num_words_mapping['dis_ls'] = dis_ls
 # num_words_mapping['organ_ls'] = organ_ls
 # num_words_mapping['loc_ls'] = loc_ls
-with open("D:/studium/MIML/radgraph/radgraph/smart_reporting/num_words_mapping_original.json", "r") as f:
+with open("num_words_mapping_original.json", "r") as f:
     num_words_mapping = json.load(f)
 
 dis_ls,organ_ls,loc_ls,cls_ls = num_words_mapping['dis_ls'],num_words_mapping['organ_ls'],num_words_mapping['loc_ls'],num_words_mapping['cls_ls']
@@ -441,7 +457,7 @@ for key in data.keys():  # key : "p18/p18004941/s58821758.txt"
     dataset = gen_dataset(dataset,key,token_ls_each_report,dis_ls,organ_ls,loc_ls)
     token_ls_each_report = []
 
-write_json(dataset, 'D:/studium/MIML/radgraph/radgraph/smart_reporting/detr_SmartReporting_'+splite+'.json')
+write_json(dataset, 'D:/studium/MIML/radgraph/radgraph/premium_selected/detr_data_'+splite+'.json')
 print(max_nr)
                     #final_dict = update_dict(final_dict,output_dict)
 
